@@ -1,0 +1,93 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Цветы, шары и подарки{% endblock %}</title>
+    <meta
+        name="description"
+        content="Лёгкий Django-сайт в стиле цветочного магазина: цветы, шары, подарки и pop-up с контактами вместо оплаты."
+    >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <div class="site-shell">
+        <header class="topbar">
+            <div class="container topbar__inner">
+                <a class="brand" href="{% url 'home' %}">
+                    <span class="brand__badge">studio</span>
+                    <span class="brand__name">Шары и Точка</span>
+                </a>
+                <nav class="main-nav" aria-label="Основное меню">
+                    {% for item in nav_items %}
+                        <a href="{{ item.href }}" class="main-nav__link">{{ item.title }}</a>
+                    {% endfor %}
+                </nav>
+                <div class="header-contacts">
+                    <a href="{{ contacts.phone_link }}" class="header-contacts__phone">{{ contacts.phone_display }}</a>
+                    <button class="button button--small js-open-contact-modal" type="button">Связаться</button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+            <div class="container footer__grid">
+                <div>
+                    <p class="footer__eyebrow">Контакты</p>
+                    <a href="{{ contacts.phone_link }}" class="footer__link">{{ contacts.phone_display }}</a>
+                    <p>{{ contacts.address }}</p>
+                    <p>{{ contacts.hours }}</p>
+                </div>
+                <div>
+                    <p class="footer__eyebrow">Разделы</p>
+                    <div class="footer__links">
+                        {% for item in nav_items %}
+                            <a href="{{ item.href }}" class="footer__link">{{ item.title }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div>
+                    <p class="footer__eyebrow">Примечание</p>
+                    <p>Контакты в pop-up сейчас заполнены демо-значениями. Замени их в файле `catalog/data.py` на реальные.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <div class="modal" id="contact-modal" aria-hidden="true">
+        <div class="modal__backdrop js-close-contact-modal"></div>
+        <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title">
+            <button class="modal__close js-close-contact-modal" type="button" aria-label="Закрыть окно">×</button>
+            <p class="modal__eyebrow">Связь вместо оплаты</p>
+            <h2 id="contact-modal-title">Оформление через мессенджер</h2>
+            <p class="modal__text">
+                Мы убрали оплату на сайте. Чтобы оформить заказ, напиши менеджеру в удобный мессенджер:
+            </p>
+            <div class="modal__actions">
+                <a href="{{ contacts.telegram_link }}" class="button button--telegram" target="_blank" rel="noreferrer">
+                    Telegram {{ contacts.telegram_label }}
+                </a>
+                <a href="{{ contacts.max_link }}" class="button button--max" target="_blank" rel="noreferrer">
+                    {{ contacts.max_label }}
+                </a>
+                <a href="{{ contacts.whatsapp_link }}" class="button button--whatsapp" target="_blank" rel="noreferrer">
+                    WhatsApp {{ contacts.whatsapp_label }}
+                </a>
+            </div>
+            <div class="modal__note">
+                <p>Что лучше написать: желаемый состав, бюджет, адрес доставки и удобное время.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/site.js' %}?v=2"></script>
+</body>
+</html>

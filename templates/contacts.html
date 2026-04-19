@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Контакты | Шары и Точка{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--narrow">
+    <div class="container">
+        <p class="eyebrow">контакты</p>
+        <h1>Связь с магазином и менеджером</h1>
+        <p class="lead">
+            Страница сделана как лёгкая альтернатива насыщенному блоку контактов у референса: всё важное под рукой,
+            а основной call to action ведёт в pop-up.
+        </p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container contacts-grid">
+        <article class="contact-panel">
+            <p class="eyebrow">основное</p>
+            <h2>Связаться с нами</h2>
+            <p><a href="{{ contacts.phone_link }}" class="footer__link">{{ contacts.phone_display }}</a></p>
+            <p>{{ contacts.address }}</p>
+            <p>{{ contacts.hours }}</p>
+            <div class="contact-panel__actions">
+                <button class="button js-open-contact-modal" type="button">Открыть pop-up</button>
+            </div>
+        </article>
+        <article class="contact-panel contact-panel--soft">
+            <p class="eyebrow">папка для фото</p>
+            <h2>Куда класть изображения</h2>
+            <p>Реальные фото товаров можно складывать в `static/images/photos/` и потом просто подставлять в карточки.</p>
+            <p>Сейчас в проекте лежат SVG-заглушки, чтобы сайт сразу выглядел собранным и запускался без внешних зависимостей.</p>
+        </article>
+    </div>
+</section>
+{% endblock %}

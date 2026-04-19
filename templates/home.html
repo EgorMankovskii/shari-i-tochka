@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Главная | Шары и Точка{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="container hero__grid">
+        <div class="hero__content">
+            <p class="eyebrow">доставка цветов и шаров</p>
+            <h1>{{ page.hero_title }}</h1>
+            <p class="hero__text">{{ page.hero_text }}</p>
+            <div class="hero__badges">
+                {% for badge in page.hero_badges %}
+                    <span class="pill">{{ badge }}</span>
+                {% endfor %}
+            </div>
+            <div class="hero__actions">
+                {% if categories %}
+                    <a href="{{ categories.0.get_absolute_url }}" class="button">Перейти в каталог</a>
+                {% endif %}
+                <button class="button button--ghost js-open-contact-modal" type="button">Написать менеджеру</button>
+            </div>
+        </div>
+        <div class="hero__visual">
+            <div class="hero-card hero-card--main">
+                <img src="{% static 'images/products/flowers.svg' %}" alt="Иллюстрация букета">
+            </div>
+            <div class="hero-card hero-card--accent">
+                <img src="{% static 'images/products/balloons.svg' %}" alt="Иллюстрация шаров">
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">каталог</p>
+                <h2>Основные разделы</h2>
+            </div>
+            <button class="button button--small js-open-contact-modal" type="button">Заказать через pop-up</button>
+        </div>
+        <div class="grid grid--3">
+            {% for category in categories %}
+                <article class="card card--category">
+                    <img src="{{ category.display_image_url }}" alt="{{ category.title }}">
+                    <h3>{{ category.title }}</h3>
+                    <p>{{ category.home_description }}</p>
+                    <a href="{{ category.get_absolute_url }}" class="card__link">Открыть раздел</a>
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="section section--soft">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">хиты</p>
+                <h2>Популярные позиции</h2>
+            </div>
+        </div>
+        <div class="grid grid--3">
+            {% for product in featured_products %}
+                <article class="product-card product-card--tall">
+                    {% if product.tag %}
+                        <span class="product-card__tag">{{ product.tag }}</span>
+                    {% endif %}
+                    <a href="{{ product.get_absolute_url }}" class="product-card__image-link">
+                        <img
+                            src="{{ product.display_image_url }}"
+                            alt="{{ product.title }}"
+                            style="object-position: {{ product.object_position }};"
+                        >
+                    </a>
+                    <p class="product-card__category">{{ product.category.title }}</p>
+                    <h3><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h3>
+                    <div class="product-card__bottom">
+                        <span class="product-card__price">{{ product.price }}</span>
+                        <a href="{{ product.get_absolute_url }}" class="button button--small">Открыть</a>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container about-layout">
+        <div>
+            <p class="eyebrow">о магазине</p>
+            <h2>Внешне похоже на референс, но без перегруза</h2>
+            <p class="lead">
+                Здесь сохранены знакомые ритмы: крупный баннер, карточки каталога, блок преимуществ, доставка и контакты.
+                При этом структура стала легче, а основной сценарий переведён в живое общение с менеджером.
+            </p>
+            <div class="occasion-list">
+                {% for item in occasions %}
+                    <span class="pill pill--light">{{ item }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="advantage-stack">
+            {% for advantage in advantages %}
+                <article class="advantage">
+                    <h3>{{ advantage.title }}</h3>
+                    <p>{{ advantage.text }}</p>
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="section section--soft">
+    <div class="container preview-banner">
+        <div>
+            <p class="eyebrow">доставка</p>
+            <h2>{{ delivery_preview.title }}</h2>
+            <p>{{ delivery_preview.text }}</p>
+        </div>
+        <div class="preview-banner__actions">
+            <a href="{% url 'delivery' %}" class="button">Смотреть условия</a>
+            <button class="button button--ghost js-open-contact-modal" type="button">Открыть контакты</button>
+        </div>
+    </div>
+</section>
+{% endblock %}

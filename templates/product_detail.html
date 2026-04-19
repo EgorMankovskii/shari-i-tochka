@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.title }} | Шары и Точка{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="container product-layout">
+        <div class="product-gallery js-product-gallery">
+            <button type="button" class="product-gallery__main js-gallery-open" data-gallery-index="0">
+                <img
+                    class="js-product-gallery-main-image"
+                    src="{{ product.display_image_url }}"
+                    alt="{{ product.title }}"
+                    style="object-position: {{ product.object_position }};"
+                >
+            </button>
+
+            <div class="product-gallery__thumbs">
+                <button
+                    type="button"
+                    class="product-gallery__thumb product-gallery__thumb--active js-gallery-thumb"
+                    data-gallery-index="0"
+                    data-image-src="{{ product.display_image_url }}"
+                    data-image-alt="{{ product.title }}"
+                    data-image-title="{{ product.title }}"
+                >
+                    <img src="{{ product.display_image_url }}" alt="{{ product.title }}">
+                </button>
+                {% for image in gallery_images %}
+                    <button
+                        type="button"
+                        class="product-gallery__thumb js-gallery-thumb"
+                        data-gallery-index="{{ forloop.counter }}"
+                        data-image-src="{{ image.display_image_url }}"
+                        data-image-alt="{{ image.title|default:product.title }}"
+                        data-image-title="{{ image.title|default:product.title }}"
+                    >
+                        <img src="{{ image.display_image_url }}" alt="{{ image.title|default:product.title }}">
+                    </button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="product-summary">
+            <p class="eyebrow">{{ product.category.title }}</p>
+            <h1>{{ product.title }}</h1>
+            {% if product.tag %}
+                <span class="pill">{{ product.tag }}</span>
+            {% endif %}
+            <p class="product-summary__price">{{ product.price }}</p>
+            {% if product.description %}
+                <p class="lead">{{ product.description }}</p>
+            {% else %}
+                <p class="lead">
+                    Страница товара показывает основную карточку, дополнительные изображения и полное описание.
+                    Всё это теперь можно редактировать в админке.
+                </p>
+            {% endif %}
+            <div class="hero__actions">
+                <button class="button js-open-contact-modal" type="button">Связаться по товару</button>
+                <a href="{{ product.category.get_absolute_url }}" class="button button--ghost">Назад в раздел</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if gallery_images %}
+<section class="section section--soft">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">галерея</p>
+                <h2>Дополнительные карточки товара</h2>
+            </div>
+        </div>
+        <div class="grid grid--3">
+            {% for image in gallery_images %}
+                <article class="card product-extra-card">
+                    <button
+                        type="button"
+                        class="product-extra-card__button js-gallery-open js-gallery-thumb"
+                        data-gallery-index="{{ forloop.counter }}"
+                        data-image-src="{{ image.display_image_url }}"
+                        data-image-alt="{{ image.title|default:product.title }}"
+                        data-image-title="{{ image.title|default:product.title }}"
+                    >
+                        <img src="{{ image.display_image_url }}" alt="{{ image.title|default:product.title }}">
+                    </button>
+                    {% if image.title %}
+                        <h3>{{ image.title }}</h3>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{% if related_products %}
+<section class="section">
+    <div class="container">
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">ещё в разделе</p>
+                <h2>Похожие товары</h2>
+            </div>
+        </div>
+        <div class="grid grid--3">
+            {% for item in related_products %}
+                <article class="product-card product-card--tall">
+                    <a href="{{ item.get_absolute_url }}" class="product-card__image-link">
+                        <img
+                            src="{{ item.display_image_url }}"
+                            alt="{{ item.title }}"
+                            style="object-position: {{ item.object_position }};"
+                        >
+                    </a>
+                    <h3><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></h3>
+                    <div class="product-card__bottom">
+                        <span class="product-card__price">{{ item.price }}</span>
+                        <a href="{{ item.get_absolute_url }}" class="button button--small">Открыть</a>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<div class="lightbox" id="gallery-lightbox" aria-hidden="true">
+    <div class="lightbox__backdrop js-close-lightbox"></div>
+    <div class="lightbox__dialog" role="dialog" aria-modal="true" aria-labelledby="gallery-lightbox-title">
+        <button class="lightbox__close js-close-lightbox" type="button" aria-label="Закрыть просмотр">×</button>
+        <button class="lightbox__nav lightbox__nav--prev js-lightbox-prev" type="button" aria-label="Предыдущее фото">‹</button>
+        <figure class="lightbox__figure">
+            <img id="lightbox-image" class="lightbox__image" alt="">
+            <figcaption class="lightbox__caption">
+                <p id="gallery-lightbox-title" class="lightbox__title"></p>
+            </figcaption>
+        </figure>
+        <button class="lightbox__nav lightbox__nav--next js-lightbox-next" type="button" aria-label="Следующее фото">›</button>
+    </div>
+</div>
+{% endblock %}

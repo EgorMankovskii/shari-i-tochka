@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ category.title }} | Шары и Точка{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <div class="container page-hero__grid">
+        <div>
+            <p class="eyebrow">{{ category.title }}</p>
+            <h1>{{ category.display_page_title }}</h1>
+            <p class="lead">{{ category.page_lead }}</p>
+            <div class="hero__badges">
+                <span class="pill">{{ category.accent }}</span>
+                <span class="pill">Оформление через мессенджер</span>
+            </div>
+            <div class="hero__actions">
+                <button class="button js-open-contact-modal" type="button">Оставить заявку</button>
+                <a href="{% url 'delivery' %}" class="button button--ghost">Условия доставки</a>
+            </div>
+        </div>
+        <div class="page-hero__art">
+            <img src="{{ category.display_image_url }}" alt="{{ category.title }}">
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="filter-row">
+            {% for filter in category.filters %}
+                <button class="filter-chip{% if forloop.first %} filter-chip--active{% endif %}" type="button">{{ filter }}</button>
+            {% endfor %}
+        </div>
+        <div class="grid grid--4">
+            {% for product in products %}
+                <article class="product-card product-card--compact product-card--tall">
+                    <a href="{{ product.get_absolute_url }}" class="product-card__image-link">
+                        <img
+                            src="{{ product.display_image_url }}"
+                            alt="{{ product.title }}"
+                            style="object-position: {{ product.object_position }};"
+                        >
+                    </a>
+                    <h3><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h3>
+                    <div class="product-card__bottom">
+                        <span class="product-card__price">{{ product.price }}</span>
+                        <a href="{{ product.get_absolute_url }}" class="button button--small">Подробнее</a>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Доставка | Шары и Точка{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--narrow">
+    <div class="container">
+        <p class="eyebrow">доставка и оформление</p>
+        <h1>Как работает заказ без оплаты на сайте</h1>
+        <p class="lead">
+            Вместо корзины и эквайринга клиенту сразу предлагается связаться с менеджером. Это проще для быстрых заказов
+            и удобно, если композиции часто собираются индивидуально.
+        </p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container info-grid">
+        <article class="info-card">
+            <p class="eyebrow">сценарий</p>
+            <h2>4 шага до доставки</h2>
+            <ol class="steps-list">
+                {% for step in delivery_page.steps %}
+                    <li>{{ step }}</li>
+                {% endfor %}
+            </ol>
+        </article>
+        <article class="info-card">
+            <p class="eyebrow">зоны</p>
+            <h2>Базовые тарифы</h2>
+            <div class="zone-list">
+                {% for zone in delivery_page.zones %}
+                    <div class="zone-list__item">
+                        <span>{{ zone.name }}</span>
+                        <strong>{{ zone.price }}</strong>
+                    </div>
+                {% endfor %}
+            </div>
+        </article>
+    </div>
+</section>
+
+<section class="section section--soft">
+    <div class="container notes-panel">
+        <div>
+            <p class="eyebrow">важно</p>
+            <h2>Что стоит оставить на этой странице</h2>
+        </div>
+        <div class="notes-panel__list">
+            {% for note in delivery_page.notes %}
+                <article class="note-card">{{ note }}</article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
