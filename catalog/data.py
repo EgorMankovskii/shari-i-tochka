@@ -1,12 +1,12 @@
 CONTACTS = {
-    'phone_display': '+7 (999) 000-00-00',
-    'phone_link': 'tel:+79990000000',
-    'telegram_label': '+90 501 210 6009',
-    'telegram_link': 'https://t.me/+905012106009',
+    'phone_display': '+7 (903) 268-76-33',
+    'phone_link': 'tel:+79032687633',
+    'telegram_label': '@M_Olga_G_2022',
+    'telegram_link': 'https://t.me/M_Olga_G_2022',
     'max_label': 'Max',
     'max_link': 'https://max.ru/u/f9LHodD0cOK0QwFUlmjTORPRY-pSs8QK2_eRwDoAaEf5PIhQ5rZcOCrxDr8',
-    'whatsapp_label': '+7 (999) 000-00-00',
-    'whatsapp_link': 'https://wa.me/79990000000',
+    'whatsapp_label': '+7 903 268 7633',
+    'whatsapp_link': 'https://wa.me/79032687633',
     'manager_name': 'Макс',
     'address': 'Москва, район Тушино',
     'hours': 'ежедневно, 09:00-22:00',
@@ -78,7 +78,7 @@ HOME_PAGE = {
         },
         {
             'title': 'Удобный сценарий связи',
-            'text': 'Вместо корзины и оплаты посетитель сразу видит pop-up с Telegram и WhatsApp менеджера.',
+            'text': 'Вместо корзины и оплаты посетитель сразу видит окно связи с Telegram и WhatsApp.',
         },
         {
             'title': 'Готово под замену контента',
@@ -112,7 +112,7 @@ CATEGORIES = {
     'balloons': {
         'menu_title': 'Шары',
         'page_title': 'Композиции из шаров',
-        'lead': 'Упрощённая витрина для шаров с карточками, ценами и кнопкой открытия pop-up вместо оплаты.',
+        'lead': 'Упрощённая витрина для шаров с карточками, ценами и кнопкой связи вместо оплаты.',
         'accent': 'Фонтаны, наборы, шары с конфетти',
         'image': 'images/products/balloons.svg',
         'filters': ['Все', 'Фонтаны', 'Детские', 'Праздничные'],
@@ -146,7 +146,7 @@ DELIVERY_INFO = {
     },
     'steps': [
         'Выбираете раздел и нажимаете кнопку связи.',
-        'Открывается pop-up с Telegram и WhatsApp менеджера Макса.',
+        'Открывается окно связи с Telegram и WhatsApp.',
         'Подтверждаете состав, стоимость и адрес напрямую в мессенджере.',
         'Получаете фото готового заказа перед отправкой.',
     ],

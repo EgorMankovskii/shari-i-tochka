@@ -3,64 +3,71 @@
     const CARD_RATIO = 4 / 5.5;
     const DEFAULT_FRAME_WIDTH_RATIO = 0.62;
     const MIN_FRAME_WIDTH = 120;
+    const findContainer = (root) => (
+        root.closest(".inline-related") ||
+        root.closest(".tabular.inline-related") ||
+        root.closest(".stacked.inline-related") ||
+        root.closest("form") ||
+        document
+    );
+
+    const findField = (root, fieldName) => {
+        const container = findContainer(root);
+        return (
+            container.querySelector(`[name$="-${fieldName}"]`) ||
+            container.querySelector(`[name="${fieldName}"]`) ||
+            container.querySelector(`#id_${fieldName}`)
+        );
+    };
+
+    const findImageInputs = (root) => {
+        const container = findContainer(root);
+        const inputs = Array.from(container.querySelectorAll('input[type="file"]'));
+        const preferred = inputs.filter((input) => {
+            const marker = `${input.name || ""} ${input.id || ""}`.toLowerCase();
+            return marker.includes("image");
+        });
+
+        return preferred.length ? preferred : inputs;
+    };
 
     const initCropper = (root) => {
-        const workspace = root.querySelector('.product-cropper__workspace');
-        const empty = root.querySelector('.product-cropper__empty');
-        const stage = root.querySelector('.product-cropper__stage');
-        const image = root.querySelector('.product-cropper__image');
-        const frame = root.querySelector('.product-cropper__frame');
-        const previewCanvas = root.querySelector('.product-cropper__preview-canvas');
-        const handles = root.querySelectorAll('[data-resize-dir]');
-        const imageInput = document.querySelector('#id_image');
-        const cropXInput = document.querySelector('#id_crop_x');
-        const cropYInput = document.querySelector('#id_crop_y');
-        const cropScaleInput = document.querySelector('#id_crop_scale');
+        if (root.dataset.cropperReady === "true") {
+            return;
+        }
+
+        const workspace = root.querySelector(".product-cropper__workspace");
+        const empty = root.querySelector(".product-cropper__empty");
+        const stage = root.querySelector(".product-cropper__stage");
+        const image = root.querySelector(".product-cropper__image");
+        const frame = root.querySelector(".product-cropper__frame");
+        const previewCanvas = root.querySelector(".product-cropper__preview-canvas");
+        const handles = root.querySelectorAll("[data-resize-dir]");
+        const cropXInput = findField(root, "crop_x");
+        const cropYInput = findField(root, "crop_y");
+        const cropScaleInput = findField(root, "crop_scale");
+        let imageInputs = [];
 
         if (!workspace || !empty || !stage || !image || !frame || !previewCanvas || !cropXInput || !cropYInput || !cropScaleInput) {
             return;
         }
 
-        const previewContext = previewCanvas.getContext('2d');
-        let currentSrc = root.dataset.imageUrl || '';
+        root.dataset.cropperReady = "true";
+        const previewContext = previewCanvas.getContext("2d");
+        let currentSrc = root.dataset.imageUrl || "";
         let mode = null;
         let activePointerId = null;
-        let resizeDir = '';
+        let resizeDir = "";
         let startPointerX = 0;
         let startPointerY = 0;
         let startBox = { x: 0, y: 0, width: 0, height: 0 };
         let box = { x: 0, y: 0, width: 0, height: 0 };
+        let boundInputListener = null;
+        let lastSelectedFileKey = "";
 
         const stageHeight = () => image.clientHeight || stage.clientHeight;
         const maxBoxWidth = () => stage.clientWidth;
         const maxBoxHeight = () => stageHeight();
-
-        const applyBox = () => {
-            const maxWidth = maxBoxWidth();
-            const maxHeight = maxBoxHeight();
-            const minWidth = Math.min(MIN_FRAME_WIDTH, maxWidth);
-            const minHeight = minWidth / CARD_RATIO;
-
-            box.width = clamp(box.width, minWidth, maxWidth);
-            box.height = box.width / CARD_RATIO;
-
-            if (box.height > maxHeight) {
-                box.height = maxHeight;
-                box.width = box.height * CARD_RATIO;
-            }
-
-            box.x = clamp(box.x, 0, maxWidth - box.width);
-            box.y = clamp(box.y, 0, maxHeight - box.height);
-
-            frame.style.width = `${box.width}px`;
-            frame.style.height = `${box.height}px`;
-            frame.style.left = `${box.x}px`;
-            frame.style.top = `${box.y}px`;
-
-            positionHandles();
-            syncInputs();
-            drawPreview();
-        };
 
         const positionHandles = () => {
             const left = box.x;
@@ -89,8 +96,8 @@
         };
 
         const syncInputs = () => {
-            const centerX = box.x + (box.width / 2);
-            const centerY = box.y + (box.height / 2);
+            const centerX = box.x + box.width / 2;
+            const centerY = box.y + box.height / 2;
             const stageW = stage.clientWidth;
             const stageH = stageHeight();
             const defaultWidth = stageW * DEFAULT_FRAME_WIDTH_RATIO;
@@ -113,17 +120,33 @@
             const sh = (box.height / stageHeight()) * image.naturalHeight;
 
             previewContext.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
-            previewContext.drawImage(
-                image,
-                sx,
-                sy,
-                sw,
-                sh,
-                0,
-                0,
-                previewCanvas.width,
-                previewCanvas.height,
-            );
+            previewContext.drawImage(image, sx, sy, sw, sh, 0, 0, previewCanvas.width, previewCanvas.height);
+        };
+
+        const applyBox = () => {
+            const maxWidth = maxBoxWidth();
+            const maxHeight = maxBoxHeight();
+            const minWidth = Math.min(MIN_FRAME_WIDTH, maxWidth);
+
+            box.width = clamp(box.width, minWidth, maxWidth);
+            box.height = box.width / CARD_RATIO;
+
+            if (box.height > maxHeight) {
+                box.height = maxHeight;
+                box.width = box.height * CARD_RATIO;
+            }
+
+            box.x = clamp(box.x, 0, maxWidth - box.width);
+            box.y = clamp(box.y, 0, maxHeight - box.height);
+
+            frame.style.width = `${box.width}px`;
+            frame.style.height = `${box.height}px`;
+            frame.style.left = `${box.x}px`;
+            frame.style.top = `${box.y}px`;
+
+            positionHandles();
+            syncInputs();
+            drawPreview();
         };
 
         const placeBoxFromInputs = () => {
@@ -138,8 +161,8 @@
 
             box.width = width;
             box.height = height;
-            box.x = ((centerXPercent / 100) * stageW) - (width / 2);
-            box.y = ((centerYPercent / 100) * stageH) - (height / 2);
+            box.x = (centerXPercent / 100) * stageW - width / 2;
+            box.y = (centerYPercent / 100) * stageH - height / 2;
             applyBox();
         };
 
@@ -147,10 +170,15 @@
             currentSrc = src;
 
             if (!currentSrc) {
+                image.removeAttribute("src");
                 workspace.hidden = true;
                 empty.hidden = false;
+                previewContext?.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
                 return;
             }
+
+            workspace.hidden = false;
+            empty.hidden = true;
 
             image.onload = () => {
                 workspace.hidden = false;
@@ -158,7 +186,83 @@
                 placeBoxFromInputs();
             };
 
+            image.onerror = () => {
+                workspace.hidden = true;
+                empty.hidden = false;
+                previewContext?.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+            };
+
             image.src = currentSrc;
+        };
+
+        const showSelectedFile = (file) => {
+            if (!file) {
+                showImage(root.dataset.imageUrl || "");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (loadEvent) => {
+                const result = typeof loadEvent.target?.result === "string" ? loadEvent.target.result : "";
+                if (result) {
+                    showImage(result);
+                }
+            };
+            reader.readAsDataURL(file);
+        };
+
+        const bindImageInput = () => {
+            const nextInputs = findImageInputs(root);
+            const isSameSet =
+                nextInputs.length === imageInputs.length &&
+                nextInputs.every((input, index) => input === imageInputs[index]);
+
+            if (isSameSet) {
+                return;
+            }
+
+            if (boundInputListener) {
+                imageInputs.forEach((input) => {
+                    input.removeEventListener("change", boundInputListener);
+                });
+            }
+
+            boundInputListener = (event) => {
+                const [file] = event.target.files || [];
+                showSelectedFile(file || null);
+            };
+
+            imageInputs = nextInputs;
+            imageInputs.forEach((input) => {
+                input.addEventListener("change", boundInputListener);
+            });
+        };
+
+        const syncSelectedFile = () => {
+            bindImageInput();
+
+            if (!imageInputs.length) {
+                return;
+            }
+
+            const activeInput = imageInputs.find((input) => (input.files || []).length) || imageInputs[0];
+            const [file] = activeInput?.files || [];
+            const nextFileKey = file ? `${file.name}:${file.size}:${file.lastModified}` : "";
+
+            if (nextFileKey === lastSelectedFileKey) {
+                return;
+            }
+
+            lastSelectedFileKey = nextFileKey;
+
+            if (file) {
+                showSelectedFile(file);
+                return;
+            }
+
+            if (activeInput && !activeInput.value) {
+                showImage(root.dataset.imageUrl || "");
+            }
         };
 
         const resizeBox = (deltaX, deltaY) => {
@@ -166,15 +270,15 @@
             const startBottom = startBox.y + startBox.height;
             let targetWidth = startBox.width;
 
-            const widthFromX = resizeDir.includes('e')
+            const widthFromX = resizeDir.includes("e")
                 ? startBox.width + deltaX
-                : resizeDir.includes('w')
+                : resizeDir.includes("w")
                     ? startBox.width - deltaX
                     : null;
-            const widthFromY = resizeDir.includes('s')
-                ? startBox.width + (deltaY * CARD_RATIO)
-                : resizeDir.includes('n')
-                    ? startBox.width - (deltaY * CARD_RATIO)
+            const widthFromY = resizeDir.includes("s")
+                ? startBox.width + deltaY * CARD_RATIO
+                : resizeDir.includes("n")
+                    ? startBox.width - deltaY * CARD_RATIO
                     : null;
 
             if (widthFromX !== null && widthFromY !== null) {
@@ -192,24 +296,19 @@
             let nextX = startBox.x;
             let nextY = startBox.y;
 
-            if (resizeDir.includes('w')) {
+            if (resizeDir.includes("w")) {
                 nextX = startRight - targetWidth;
-            } else if (!resizeDir.includes('e')) {
-                nextX = startBox.x + ((startBox.width - targetWidth) / 2);
+            } else if (!resizeDir.includes("e")) {
+                nextX = startBox.x + (startBox.width - targetWidth) / 2;
             }
 
-            if (resizeDir.includes('n')) {
+            if (resizeDir.includes("n")) {
                 nextY = startBottom - targetHeight;
-            } else if (!resizeDir.includes('s')) {
-                nextY = startBox.y + ((startBox.height - targetHeight) / 2);
+            } else if (!resizeDir.includes("s")) {
+                nextY = startBox.y + (startBox.height - targetHeight) / 2;
             }
 
-            box = {
-                x: nextX,
-                y: nextY,
-                width: targetWidth,
-                height: targetHeight,
-            };
+            box = { x: nextX, y: nextY, width: targetWidth, height: targetHeight };
             applyBox();
         };
 
@@ -221,32 +320,32 @@
             const deltaX = event.clientX - startPointerX;
             const deltaY = event.clientY - startPointerY;
 
-            if (mode === 'move') {
+            if (mode === "move") {
                 box.x = startBox.x + deltaX;
                 box.y = startBox.y + deltaY;
                 applyBox();
                 return;
             }
 
-            if (mode === 'resize') {
+            if (mode === "resize") {
                 resizeBox(deltaX, deltaY);
             }
         };
 
         const stopInteraction = () => {
             mode = null;
-            resizeDir = '';
+            resizeDir = "";
             if (activePointerId !== null) {
                 frame.releasePointerCapture?.(activePointerId);
             }
             activePointerId = null;
         };
 
-        frame.addEventListener('pointerdown', (event) => {
+        frame.addEventListener("pointerdown", (event) => {
             if (event.target !== frame) {
                 return;
             }
-            mode = 'move';
+            mode = "move";
             activePointerId = event.pointerId;
             startPointerX = event.clientX;
             startPointerY = event.clientY;
@@ -255,11 +354,11 @@
         });
 
         handles.forEach((handle) => {
-            handle.addEventListener('pointerdown', (event) => {
+            handle.addEventListener("pointerdown", (event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                mode = 'resize';
-                resizeDir = handle.dataset.resizeDir || '';
+                mode = "resize";
+                resizeDir = handle.dataset.resizeDir || "";
                 activePointerId = event.pointerId;
                 startPointerX = event.clientX;
                 startPointerY = event.clientY;
@@ -268,34 +367,44 @@
             });
         });
 
-        window.addEventListener('pointermove', onPointerMove);
-        window.addEventListener('pointerup', stopInteraction);
-        window.addEventListener('resize', () => {
+        window.addEventListener("pointermove", onPointerMove);
+        window.addEventListener("pointerup", stopInteraction);
+        window.addEventListener("resize", () => {
             if (currentSrc) {
                 placeBoxFromInputs();
             }
         });
 
-        if (imageInput) {
-            imageInput.addEventListener('change', (event) => {
-                const [file] = event.target.files || [];
-                if (!file) {
-                    showImage(root.dataset.imageUrl || '');
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = (loadEvent) => {
-                    showImage(loadEvent.target?.result || '');
-                };
-                reader.readAsDataURL(file);
-            });
-        }
+        bindImageInput();
+        root.__cropperPreviewFile = showSelectedFile;
+        root.__cropperSyncSelectedFile = syncSelectedFile;
 
         showImage(currentSrc);
+        window.setInterval(syncSelectedFile, 350);
     };
 
-    window.addEventListener('load', () => {
-        document.querySelectorAll('[data-product-cropper]').forEach(initCropper);
+    const initAllCroppers = () => {
+        document.querySelectorAll("[data-product-cropper]").forEach(initCropper);
+    };
+
+    window.addEventListener("load", initAllCroppers);
+    document.addEventListener("formset:added", initAllCroppers);
+    document.addEventListener("change", (event) => {
+        const input = event.target;
+        if (!(input instanceof HTMLInputElement) || input.type !== "file") {
+            return;
+        }
+
+        const inlineRoot = input.closest(".inline-related");
+        const scope = inlineRoot || input.form || document;
+        const cropper = scope.querySelector("[data-product-cropper]");
+        if (!cropper) {
+            return;
+        }
+
+        initCropper(cropper);
+        const [file] = input.files || [];
+        cropper.__cropperPreviewFile?.(file || null);
+        cropper.__cropperSyncSelectedFile?.();
     });
 })();

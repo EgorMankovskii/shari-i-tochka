@@ -1,10 +1,16 @@
 .field-crop_x,
-.field-crop_y {
+.field-crop_y,
+.field-crop_scale {
     display: none;
 }
 
 .product-cropper {
     margin-top: 12px;
+}
+
+.product-cropper__empty[hidden],
+.product-cropper__workspace[hidden] {
+    display: none !important;
 }
 
 .product-cropper__empty {

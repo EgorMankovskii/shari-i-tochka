@@ -3,62 +3,101 @@
 {% block title %}{{ product.title }} | Шары и Точка{% endblock %}
 
 {% block content %}
-<section class="page-hero">
-    <div class="container product-layout">
-        <div class="product-gallery js-product-gallery">
-            <button type="button" class="product-gallery__main js-gallery-open" data-gallery-index="0">
-                <img
-                    class="js-product-gallery-main-image"
-                    src="{{ product.display_image_url }}"
-                    alt="{{ product.title }}"
-                    style="object-position: {{ product.object_position }};"
-                >
-            </button>
-
-            <div class="product-gallery__thumbs">
-                <button
-                    type="button"
-                    class="product-gallery__thumb product-gallery__thumb--active js-gallery-thumb"
-                    data-gallery-index="0"
-                    data-image-src="{{ product.display_image_url }}"
-                    data-image-alt="{{ product.title }}"
-                    data-image-title="{{ product.title }}"
-                >
-                    <img src="{{ product.display_image_url }}" alt="{{ product.title }}">
+<section class="page-hero page-hero--fit js-fit-hero">
+    <div class="page-hero__fit-stage">
+        <div class="container product-layout page-hero__fit-target js-fit-hero-target">
+            <div class="product-gallery js-product-gallery">
+                <button type="button" class="product-gallery__main js-gallery-open" data-gallery-index="0">
+                    <img
+                        class="js-product-gallery-main-image"
+                        src="{{ product.display_image_url }}"
+                        alt="{{ product.title }}"
+                        style="object-position: {{ product.object_position }};"
+                    >
+                    <video
+                        class="js-product-gallery-main-video product-gallery__main-video"
+                        playsinline
+                        controls
+                        preload="metadata"
+                        hidden
+                    ></video>
                 </button>
-                {% for image in gallery_images %}
+
+                <div class="product-gallery__thumbs">
                     <button
                         type="button"
-                        class="product-gallery__thumb js-gallery-thumb"
-                        data-gallery-index="{{ forloop.counter }}"
-                        data-image-src="{{ image.display_image_url }}"
-                        data-image-alt="{{ image.title|default:product.title }}"
-                        data-image-title="{{ image.title|default:product.title }}"
+                        class="product-gallery__thumb product-gallery__thumb--active js-gallery-thumb"
+                        data-gallery-index="0"
+                        data-media-type="image"
+                        data-image-src="{{ product.display_image_url }}"
+                        data-image-alt="{{ product.title }}"
+                        data-image-title="{{ product.title }}"
                     >
-                        <img src="{{ image.display_image_url }}" alt="{{ image.title|default:product.title }}">
+                        <img
+                            src="{{ product.display_image_url }}"
+                            alt="{{ product.title }}"
+                            style="object-position: {{ product.object_position }};"
+                        >
                     </button>
-                {% endfor %}
+                    {% for image in gallery_images %}
+                        <button
+                            type="button"
+                            class="product-gallery__thumb js-gallery-thumb"
+                            data-gallery-index="{{ forloop.counter }}"
+                            data-media-type="image"
+                            data-image-src="{{ image.display_image_url }}"
+                            data-image-alt="{{ image.title|default:product.title }}"
+                            data-image-title="{{ image.title|default:product.title }}"
+                        >
+                            <img
+                                src="{{ image.display_image_url }}"
+                                alt="{{ image.title|default:product.title }}"
+                                style="object-position: {{ image.object_position }};"
+                            >
+                        </button>
+                    {% endfor %}
+                    {% for video in gallery_videos %}
+                        <button
+                            type="button"
+                            class="product-gallery__thumb product-gallery__thumb--video js-gallery-thumb"
+                            data-gallery-index="{{ gallery_images|length|add:forloop.counter }}"
+                            data-media-type="video"
+                            data-video-src="{{ video.video_url }}"
+                            data-video-muted="{{ video.is_muted|yesno:'true,false' }}"
+                            data-image-alt="{{ video.title|default:product.title }}"
+                            data-image-title="{{ video.title|default:product.title }}"
+                        >
+                            <span class="product-gallery__video-thumb-mark">Видео</span>
+                            <video
+                                src="{{ video.video_url }}"
+                                {% if video.is_muted %}muted{% endif %}
+                                playsinline
+                                preload="metadata"
+                            ></video>
+                        </button>
+                    {% endfor %}
+                </div>
             </div>
-        </div>
 
-        <div class="product-summary">
-            <p class="eyebrow">{{ product.category.title }}</p>
-            <h1>{{ product.title }}</h1>
-            {% if product.tag %}
-                <span class="pill">{{ product.tag }}</span>
-            {% endif %}
-            <p class="product-summary__price">{{ product.price }}</p>
-            {% if product.description %}
-                <p class="lead">{{ product.description }}</p>
-            {% else %}
-                <p class="lead">
-                    Страница товара показывает основную карточку, дополнительные изображения и полное описание.
-                    Всё это теперь можно редактировать в админке.
-                </p>
-            {% endif %}
-            <div class="hero__actions">
-                <button class="button js-open-contact-modal" type="button">Связаться по товару</button>
-                <a href="{{ product.category.get_absolute_url }}" class="button button--ghost">Назад в раздел</a>
+            <div class="product-summary">
+                <p class="eyebrow">{{ product.category.title }}</p>
+                <h1>{{ product.title }}</h1>
+                {% if product.tag %}
+                    <span class="pill">{{ product.tag }}</span>
+                {% endif %}
+                <p class="product-summary__price">{{ product.price }}</p>
+                {% if product.description %}
+                    <p class="lead">{{ product.description }}</p>
+                {% else %}
+                    <p class="lead">
+                        Страница товара показывает основную карточку, дополнительные изображения и полное описание.
+                        Все это теперь можно редактировать в админке.
+                    </p>
+                {% endif %}
+                <div class="hero__actions">
+                    <button class="button js-open-contact-modal" type="button">Связаться по товару</button>
+                    <a href="{{ product.category.get_absolute_url }}" class="button button--ghost">Назад в раздел</a>
+                </div>
             </div>
         </div>
     </div>
@@ -84,7 +123,11 @@
                         data-image-alt="{{ image.title|default:product.title }}"
                         data-image-title="{{ image.title|default:product.title }}"
                     >
-                        <img src="{{ image.display_image_url }}" alt="{{ image.title|default:product.title }}">
+                        <img
+                            src="{{ image.display_image_url }}"
+                            alt="{{ image.title|default:product.title }}"
+                            style="object-position: {{ image.object_position }};"
+                        >
                     </button>
                     {% if image.title %}
                         <h3>{{ image.title }}</h3>
@@ -110,11 +153,19 @@
                 <article class="product-card product-card--tall">
                     <a href="{{ item.get_absolute_url }}" class="product-card__image-link">
                         <img
+                            class="product-card__image js-product-card-image"
                             src="{{ item.display_image_url }}"
                             alt="{{ item.title }}"
+                            data-default-position="{{ item.object_position }}"
                             style="object-position: {{ item.object_position }};"
                         >
                     </a>
+                    <div class="product-card__slides" hidden>
+                        <span data-slide-src="{{ item.display_image_url }}" data-slide-position="{{ item.object_position }}"></span>
+                        {% for image in item.gallery_images.all %}
+                            <span data-slide-src="{{ image.display_image_url }}" data-slide-position="{{ image.object_position }}"></span>
+                        {% endfor %}
+                    </div>
                     <h3><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></h3>
                     <div class="product-card__bottom">
                         <span class="product-card__price">{{ item.price }}</span>
@@ -134,6 +185,7 @@
         <button class="lightbox__nav lightbox__nav--prev js-lightbox-prev" type="button" aria-label="Предыдущее фото">‹</button>
         <figure class="lightbox__figure">
             <img id="lightbox-image" class="lightbox__image" alt="">
+            <video id="lightbox-video" class="lightbox__video" controls playsinline preload="metadata" hidden></video>
             <figcaption class="lightbox__caption">
                 <p id="gallery-lightbox-title" class="lightbox__title"></p>
             </figcaption>

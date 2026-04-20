@@ -24,7 +24,7 @@ def home(request):
     context = shared_context() | {
         'page': HOME_PAGE,
         'categories': Category.objects.filter(is_visible=True).order_by('sort_order', 'title'),
-        'featured_products': Product.objects.select_related('category').filter(
+        'featured_products': Product.objects.select_related('category').prefetch_related('gallery_images').filter(
             is_active=True,
             is_featured=True,
             category__is_visible=True,
@@ -40,14 +40,14 @@ def category_page(request, slug):
     category = get_object_or_404(Category, slug=slug, is_visible=True)
     context = shared_context() | {
         'category': category,
-        'products': category.products.filter(is_active=True).order_by('sort_order', 'title'),
+        'products': category.products.prefetch_related('gallery_images').filter(is_active=True).order_by('sort_order', 'title'),
     }
     return render(request, 'category.html', context)
 
 
 def product_detail(request, pk):
     product = get_object_or_404(
-        Product.objects.select_related('category').prefetch_related('gallery_images'),
+        Product.objects.select_related('category').prefetch_related('gallery_images', 'gallery_videos'),
         pk=pk,
         is_active=True,
         category__is_visible=True,
@@ -55,7 +55,8 @@ def product_detail(request, pk):
     context = shared_context() | {
         'product': product,
         'gallery_images': product.gallery_images.all(),
-        'related_products': product.category.products.filter(is_active=True).exclude(pk=product.pk)[:3],
+        'gallery_videos': product.gallery_videos.all(),
+        'related_products': product.category.products.prefetch_related('gallery_images').filter(is_active=True).exclude(pk=product.pk)[:3],
     }
     return render(request, 'product_detail.html', context)
 

@@ -37,11 +37,19 @@
                 <article class="product-card product-card--compact product-card--tall">
                     <a href="{{ product.get_absolute_url }}" class="product-card__image-link">
                         <img
+                            class="product-card__image js-product-card-image"
                             src="{{ product.display_image_url }}"
                             alt="{{ product.title }}"
+                            data-default-position="{{ product.object_position }}"
                             style="object-position: {{ product.object_position }};"
                         >
                     </a>
+                    <div class="product-card__slides" hidden>
+                        <span data-slide-src="{{ product.display_image_url }}" data-slide-position="{{ product.object_position }}"></span>
+                        {% for image in product.gallery_images.all %}
+                            <span data-slide-src="{{ image.display_image_url }}" data-slide-position="{{ image.object_position }}"></span>
+                        {% endfor %}
+                    </div>
                     <h3><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h3>
                     <div class="product-card__bottom">
                         <span class="product-card__price">{{ product.price }}</span>

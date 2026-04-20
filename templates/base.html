@@ -7,12 +7,12 @@
     <title>{% block title %}Цветы, шары и подарки{% endblock %}</title>
     <meta
         name="description"
-        content="Лёгкий Django-сайт в стиле цветочного магазина: цветы, шары, подарки и pop-up с контактами вместо оплаты."
+        content="Лёгкий Django-сайт в стиле цветочного магазина: цветы, шары, подарки и оформление через контакты вместо оплаты."
     >
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=7">
 </head>
 <body>
     <div class="site-shell">
@@ -56,7 +56,7 @@
                 </div>
                 <div>
                     <p class="footer__eyebrow">Примечание</p>
-                    <p>Контакты в pop-up сейчас заполнены демо-значениями. Замени их в файле `catalog/data.py` на реальные.</p>
+                    <p>Контакты в окне связи сейчас заполнены демо-значениями. Замени их в файле `catalog/data.py` на реальные.</p>
                 </div>
             </div>
         </footer>
@@ -71,15 +71,33 @@
             <p class="modal__text">
                 Мы убрали оплату на сайте. Чтобы оформить заказ, напиши менеджеру в удобный мессенджер:
             </p>
-            <div class="modal__actions">
-                <a href="{{ contacts.telegram_link }}" class="button button--telegram" target="_blank" rel="noreferrer">
-                    Telegram {{ contacts.telegram_label }}
+            <div class="modal__actions modal__actions--messengers">
+                <a
+                    href="{{ contacts.telegram_link }}"
+                    class="button button--telegram button--icon"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Telegram"
+                >
+                    <img src="{% static 'images/social/tg-logo.svg' %}" alt="Telegram">
                 </a>
-                <a href="{{ contacts.max_link }}" class="button button--max" target="_blank" rel="noreferrer">
-                    {{ contacts.max_label }}
+                <a
+                    href="{{ contacts.max_link }}"
+                    class="button button--max button--icon"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Max"
+                >
+                    <img src="{% static 'images/social/max-logo.svg' %}" alt="Max">
                 </a>
-                <a href="{{ contacts.whatsapp_link }}" class="button button--whatsapp" target="_blank" rel="noreferrer">
-                    WhatsApp {{ contacts.whatsapp_label }}
+                <a
+                    href="{{ contacts.whatsapp_link }}"
+                    class="button button--whatsapp button--icon"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="WhatsApp"
+                >
+                    <img src="{% static 'images/social/whatsapp-logo.svg' %}" alt="WhatsApp">
                 </a>
             </div>
             <div class="modal__note">
@@ -88,6 +106,6 @@
         </div>
     </div>
 
-    <script src="{% static 'js/site.js' %}?v=2"></script>
+    <script src="{% static 'js/site.js' %}?v=7"></script>
 </body>
 </html>
