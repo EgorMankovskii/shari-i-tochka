@@ -2,13 +2,34 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+    {% static 'images/branding/logo.png' as site_logo_url %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Цветы, шары и подарки{% endblock %}</title>
     <meta
         name="description"
-        content="Лёгкий Django-сайт в стиле цветочного магазина: цветы, шары, подарки и оформление через контакты вместо оплаты."
+        content="Мы создаём атмосферу праздника с помощью воздушных шаров, свежих цветов и красивых композиций. У нас вы найдёте всё, чтобы сделать важный день ярче, теплее и радостнее. Каждый заказ мы собираем с любовью и вниманием к деталям. Нам важно, чтобы ваши эмоции были искренними, а праздник — по-настоящему особенным."
     >
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{% block og_title %}Шары и Точка{% endblock %}">
+    <meta
+        property="og:description"
+        content="Мы создаём атмосферу праздника с помощью воздушных шаров, свежих цветов и красивых композиций. У нас вы найдёте всё, чтобы сделать важный день ярче, теплее и радостнее. Каждый заказ мы собираем с любовью и вниманием к деталям. Нам важно, чтобы ваши эмоции были искренними, а праздник — по-настоящему особенным."
+    >
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site_logo_url }}">
+    <meta property="og:image:secure_url" content="{{ request.scheme }}://{{ request.get_host }}{{ site_logo_url }}">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta
+        name="twitter:description"
+        content="Мы создаём атмосферу праздника с помощью воздушных шаров, свежих цветов и красивых композиций. У нас вы найдёте всё, чтобы сделать важный день ярче, теплее и радостнее. Каждый заказ мы собираем с любовью и вниманием к деталям. Нам важно, чтобы ваши эмоции были искренними, а праздник — по-настоящему особенным."
+    >
+    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ site_logo_url }}">
+    <link rel="icon" type="image/png" href="{{ site_logo_url }}">
+    <link rel="shortcut icon" href="{{ site_logo_url }}">
+    <link rel="apple-touch-icon" href="{{ site_logo_url }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
