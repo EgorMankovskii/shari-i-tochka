@@ -52,9 +52,9 @@ def render_crop_preview(obj, empty_text):
 class CropperMediaMixin:
     class Media:
         css = {
-            "all": ("admin/css/product_cropper.css?v=4",),
+            "all": ("admin/css/product_cropper.css",),
         }
-        js = ("admin/js/product_cropper.js?v=4",)
+        js = ("admin/js/product_cropper.js",)
 
 
 class ProductInline(admin.TabularInline):
