@@ -4,7 +4,8 @@ from django.conf.urls.static import static
 from django.urls import include, path
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path(settings.ADMIN_URL_PREFIX, admin.site.urls),
+    path(settings.STUDIO_URL_PREFIX, include('catalog.studio_urls')),
     path('', include('catalog.urls')),
 ]
 

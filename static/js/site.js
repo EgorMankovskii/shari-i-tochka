@@ -35,6 +35,99 @@ const galleryRoot = document.querySelector(".js-product-gallery");
 const lightbox = document.querySelector("#gallery-lightbox");
 const fitHero = document.querySelector(".js-fit-hero");
 const productCards = Array.from(document.querySelectorAll(".product-card"));
+const CROP_CARD_RATIO = 4 / 5.5;
+const DEFAULT_FRAME_WIDTH_RATIO = 0.58;
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+const resolveCropBox = (naturalWidth, naturalHeight, cropScale) => {
+    let cropBoxWidth = (naturalWidth * DEFAULT_FRAME_WIDTH_RATIO) / (cropScale / 100);
+    let cropBoxHeight = cropBoxWidth / CROP_CARD_RATIO;
+
+    if (cropBoxHeight > naturalHeight) {
+        cropBoxHeight = naturalHeight;
+        cropBoxWidth = cropBoxHeight * CROP_CARD_RATIO;
+    }
+
+    if (cropBoxWidth > naturalWidth) {
+        cropBoxWidth = naturalWidth;
+        cropBoxHeight = cropBoxWidth / CROP_CARD_RATIO;
+    }
+
+    if (cropBoxHeight > naturalHeight) {
+        cropBoxHeight = naturalHeight;
+        cropBoxWidth = cropBoxHeight * CROP_CARD_RATIO;
+    }
+
+    return {
+        width: cropBoxWidth,
+        height: cropBoxHeight,
+    };
+};
+
+const getCropContainer = (image) => (
+    image.closest(".product-gallery__thumb-media") ||
+    image.closest(".product-card__image-link") ||
+    image.closest(".product-gallery__main") ||
+    image.closest(".product-extra-card__button")
+);
+
+const applySavedCrop = (image) => {
+    if (!image) {
+        return;
+    }
+
+    const container = getCropContainer(image);
+    const cropScale = Math.max(Number(image.dataset.cropScale || 100), 20);
+    const cropX = clamp(Number(image.dataset.cropX || 50), 0, 100);
+    const cropY = clamp(Number(image.dataset.cropY || 50), 0, 100);
+
+    if (!container || !image.naturalWidth || !image.naturalHeight || !container.clientWidth || !container.clientHeight) {
+        image.classList.remove("crop-managed-media");
+        image.style.removeProperty("left");
+        image.style.removeProperty("top");
+        image.style.removeProperty("width");
+        image.style.removeProperty("height");
+        return;
+    }
+
+    const cropBox = resolveCropBox(image.naturalWidth, image.naturalHeight, cropScale);
+    const renderScale = Math.max(
+        container.clientWidth / cropBox.width,
+        container.clientHeight / cropBox.height,
+    );
+    const renderWidth = image.naturalWidth * renderScale;
+    const renderHeight = image.naturalHeight * renderScale;
+    const centerX = (cropX / 100) * image.naturalWidth;
+    const centerY = (cropY / 100) * image.naturalHeight;
+    const left = container.clientWidth / 2 - centerX * renderScale;
+    const top = container.clientHeight / 2 - centerY * renderScale;
+
+    image.classList.add("crop-managed-media");
+    image.style.width = `${renderWidth}px`;
+    image.style.height = `${renderHeight}px`;
+    image.style.left = `${left}px`;
+    image.style.top = `${top}px`;
+};
+
+const scheduleCropApply = (image) => {
+    if (!image) {
+        return;
+    }
+
+    if (image.complete && image.naturalWidth) {
+        applySavedCrop(image);
+        return;
+    }
+
+    image.addEventListener("load", () => applySavedCrop(image), { once: true });
+};
+
+const applyAllSavedCrops = () => {
+    document.querySelectorAll("img[data-crop-scale]").forEach((image) => {
+        scheduleCropApply(image);
+    });
+};
 
 if (productCards.length) {
     productCards.forEach((card) => {
@@ -42,7 +135,9 @@ if (productCards.length) {
         const slides = Array.from(card.querySelectorAll(".product-card__slides [data-slide-src]"))
             .map((slide) => ({
                 src: slide.dataset.slideSrc || "",
-                position: slide.dataset.slidePosition || image?.dataset.defaultPosition || "50% 50%",
+                cropX: slide.dataset.slideCropX || image?.dataset.cropX || "50",
+                cropY: slide.dataset.slideCropY || image?.dataset.cropY || "50",
+                cropScale: slide.dataset.slideCropScale || image?.dataset.cropScale || "100",
             }))
             .filter((slide) => slide.src);
 
@@ -76,7 +171,10 @@ if (productCards.length) {
 
             if (immediate) {
                 image.src = nextSlide.src;
-                image.style.objectPosition = nextSlide.position;
+                image.dataset.cropX = nextSlide.cropX;
+                image.dataset.cropY = nextSlide.cropY;
+                image.dataset.cropScale = nextSlide.cropScale;
+                scheduleCropApply(image);
                 image.classList.remove("is-switching");
                 return;
             }
@@ -84,7 +182,10 @@ if (productCards.length) {
             image.classList.add("is-switching");
             window.setTimeout(() => {
                 image.src = nextSlide.src;
-                image.style.objectPosition = nextSlide.position;
+                image.dataset.cropX = nextSlide.cropX;
+                image.dataset.cropY = nextSlide.cropY;
+                image.dataset.cropScale = nextSlide.cropScale;
+                scheduleCropApply(image);
                 window.requestAnimationFrame(() => {
                     image.classList.remove("is-switching");
                 });
@@ -194,6 +295,9 @@ if (galleryRoot && lightbox) {
         src: thumb.dataset.imageSrc || "",
         videoSrc: thumb.dataset.videoSrc || "",
         videoMuted: thumb.dataset.videoMuted === "true",
+        cropX: thumb.dataset.cropX || "50",
+        cropY: thumb.dataset.cropY || "50",
+        cropScale: thumb.dataset.cropScale || "100",
         alt: thumb.dataset.imageAlt || "",
         title: thumb.dataset.imageTitle || thumb.dataset.imageAlt || "",
     }));
@@ -249,6 +353,10 @@ if (galleryRoot && lightbox) {
             mainImage.hidden = false;
             mainImage.src = item.src;
             mainImage.alt = item.alt;
+            mainImage.dataset.cropX = item.cropX;
+            mainImage.dataset.cropY = item.cropY;
+            mainImage.dataset.cropScale = item.cropScale;
+            scheduleCropApply(mainImage);
         }
 
         if (mainOpenButton) {
@@ -407,3 +515,6 @@ if (galleryRoot && lightbox) {
 
     showMedia(0);
 }
+
+window.addEventListener("load", applyAllSavedCrops);
+window.addEventListener("resize", applyAllSavedCrops);

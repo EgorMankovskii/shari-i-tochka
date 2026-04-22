@@ -12,7 +12,9 @@
                         class="js-product-gallery-main-image"
                         src="{{ product.display_image_url }}"
                         alt="{{ product.title }}"
-                        style="object-position: {{ product.object_position }};"
+                        data-crop-x="{{ product.crop_x }}"
+                        data-crop-y="{{ product.crop_y }}"
+                        data-crop-scale="{{ product.crop_scale }}"
                     >
                     <video
                         class="js-product-gallery-main-video product-gallery__main-video"
@@ -30,14 +32,21 @@
                         data-gallery-index="0"
                         data-media-type="image"
                         data-image-src="{{ product.display_image_url }}"
+                        data-crop-x="{{ product.crop_x }}"
+                        data-crop-y="{{ product.crop_y }}"
+                        data-crop-scale="{{ product.crop_scale }}"
                         data-image-alt="{{ product.title }}"
                         data-image-title="{{ product.title }}"
                     >
-                        <img
-                            src="{{ product.display_image_url }}"
-                            alt="{{ product.title }}"
-                            style="object-position: {{ product.object_position }};"
-                        >
+                        <span class="product-gallery__thumb-media">
+                            <img
+                                src="{{ product.display_image_url }}"
+                                alt="{{ product.title }}"
+                                data-crop-x="{{ product.crop_x }}"
+                                data-crop-y="{{ product.crop_y }}"
+                                data-crop-scale="{{ product.crop_scale }}"
+                            >
+                        </span>
                     </button>
                     {% for image in gallery_images %}
                         <button
@@ -46,14 +55,21 @@
                             data-gallery-index="{{ forloop.counter }}"
                             data-media-type="image"
                             data-image-src="{{ image.display_image_url }}"
+                            data-crop-x="{{ image.crop_x }}"
+                            data-crop-y="{{ image.crop_y }}"
+                            data-crop-scale="{{ image.crop_scale }}"
                             data-image-alt="{{ image.title|default:product.title }}"
                             data-image-title="{{ image.title|default:product.title }}"
                         >
-                            <img
-                                src="{{ image.display_image_url }}"
-                                alt="{{ image.title|default:product.title }}"
-                                style="object-position: {{ image.object_position }};"
-                            >
+                            <span class="product-gallery__thumb-media">
+                                <img
+                                    src="{{ image.display_image_url }}"
+                                    alt="{{ image.title|default:product.title }}"
+                                    data-crop-x="{{ image.crop_x }}"
+                                    data-crop-y="{{ image.crop_y }}"
+                                    data-crop-scale="{{ image.crop_scale }}"
+                                >
+                            </span>
                         </button>
                     {% endfor %}
                     {% for video in gallery_videos %}
@@ -120,13 +136,18 @@
                         class="product-extra-card__button js-gallery-open js-gallery-thumb"
                         data-gallery-index="{{ forloop.counter }}"
                         data-image-src="{{ image.display_image_url }}"
+                        data-crop-x="{{ image.crop_x }}"
+                        data-crop-y="{{ image.crop_y }}"
+                        data-crop-scale="{{ image.crop_scale }}"
                         data-image-alt="{{ image.title|default:product.title }}"
                         data-image-title="{{ image.title|default:product.title }}"
                     >
                         <img
                             src="{{ image.display_image_url }}"
                             alt="{{ image.title|default:product.title }}"
-                            style="object-position: {{ image.object_position }};"
+                            data-crop-x="{{ image.crop_x }}"
+                            data-crop-y="{{ image.crop_y }}"
+                            data-crop-scale="{{ image.crop_scale }}"
                         >
                     </button>
                     {% if image.title %}
@@ -156,14 +177,25 @@
                             class="product-card__image js-product-card-image"
                             src="{{ item.display_image_url }}"
                             alt="{{ item.title }}"
-                            data-default-position="{{ item.object_position }}"
-                            style="object-position: {{ item.object_position }};"
+                            data-crop-x="{{ item.crop_x }}"
+                            data-crop-y="{{ item.crop_y }}"
+                            data-crop-scale="{{ item.crop_scale }}"
                         >
                     </a>
                     <div class="product-card__slides" hidden>
-                        <span data-slide-src="{{ item.display_image_url }}" data-slide-position="{{ item.object_position }}"></span>
+                        <span
+                            data-slide-src="{{ item.display_image_url }}"
+                            data-slide-crop-x="{{ item.crop_x }}"
+                            data-slide-crop-y="{{ item.crop_y }}"
+                            data-slide-crop-scale="{{ item.crop_scale }}"
+                        ></span>
                         {% for image in item.gallery_images.all %}
-                            <span data-slide-src="{{ image.display_image_url }}" data-slide-position="{{ image.object_position }}"></span>
+                            <span
+                                data-slide-src="{{ image.display_image_url }}"
+                                data-slide-crop-x="{{ image.crop_x }}"
+                                data-slide-crop-y="{{ image.crop_y }}"
+                                data-slide-crop-scale="{{ image.crop_scale }}"
+                            ></span>
                         {% endfor %}
                     </div>
                     <h3><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></h3>

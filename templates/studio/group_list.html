@@ -1,0 +1,51 @@
+{% extends "studio/base.html" %}
+
+{% block title %}Studio | Группы{% endblock %}
+{% block studio_title %}Группы{% endblock %}
+{% block studio_subtitle %}<p class="studio-header__subtitle">Редактирование групп и наборов прав доступа. Этот раздел доступен только суперпользователю.</p>{% endblock %}
+
+{% block studio_content %}
+    <section class="studio-card">
+        <div class="studio-toolbar">
+            <h2 class="studio-card__title">Список групп</h2>
+            <a href="{% url 'studio_group_create' %}" class="studio-button studio-button--accent">Добавить группу</a>
+        </div>
+
+        <form method="get" class="studio-search">
+            <div class="studio-search__group">
+                <input type="text" name="q" value="{{ query }}" placeholder="Поиск по названию группы">
+            </div>
+            <div class="studio-search__group">
+                <button type="submit" class="studio-button studio-button--small">Найти</button>
+                <a href="{% url 'studio_group_list' %}" class="studio-button studio-button--ghost studio-button--small">Сбросить</a>
+            </div>
+        </form>
+
+        <div class="studio-table-wrap">
+            <table class="studio-table">
+                <thead>
+                    <tr>
+                        <th>Группа</th>
+                        <th>Прав</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in groups %}
+                        <tr>
+                            <td><a href="{% url 'studio_group_edit' group.pk %}?next={{ request.get_full_path|urlencode }}">{{ group.name }}</a></td>
+                            <td>{{ group.permissions.count }}</td>
+                            <td>
+                                <a href="{% url 'studio_group_edit' group.pk %}?next={{ request.get_full_path|urlencode }}" class="studio-button studio-button--small">Редактировать</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3" class="studio-empty">Группы не найдены.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

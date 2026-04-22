@@ -1,0 +1,88 @@
+{% extends "studio/base.html" %}
+
+{% block title %}Studio | Товары{% endblock %}
+{% block studio_title %}Товары каталога{% endblock %}
+{% block studio_subtitle %}<p class="studio-header__subtitle">Управление карточками, публикацией и быстрым переходом к редактированию.</p>{% endblock %}
+
+{% block studio_content %}
+    <section class="studio-card">
+        <div class="studio-toolbar">
+            <h2 class="studio-card__title">Список товаров</h2>
+            <a href="{% url 'studio_product_create' %}" class="studio-button studio-button--accent">Добавить товар</a>
+        </div>
+
+        <form method="get" class="studio-search">
+            <div class="studio-search__group">
+                <input type="text" name="q" value="{{ query }}" placeholder="Поиск по названию">
+                <select name="category">
+                    <option value="">Все категории</option>
+                    {% for category in categories %}
+                        <option value="{{ category.pk }}"{% if selected_category == category.pk|stringformat:'s' %} selected{% endif %}>{{ category.title }}</option>
+                    {% endfor %}
+                </select>
+                <select name="status">
+                    <option value="">Все статусы</option>
+                    <option value="active"{% if selected_status == 'active' %} selected{% endif %}>Только активные</option>
+                    <option value="hidden"{% if selected_status == 'hidden' %} selected{% endif %}>Только скрытые</option>
+                </select>
+            </div>
+            <div class="studio-search__group">
+                <button type="submit" class="studio-button studio-button--small">Найти</button>
+                <a href="{% url 'studio_product_list' %}" class="studio-button studio-button--ghost studio-button--small">Сбросить</a>
+            </div>
+        </form>
+
+        <div class="studio-table-wrap">
+            <table class="studio-table">
+                <thead>
+                    <tr>
+                        <th>Товар</th>
+                        <th>Фото</th>
+                        <th>Категория</th>
+                        <th>Цена</th>
+                        <th>Метка</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                        <tr>
+                            <td><a href="{% url 'studio_product_edit' product.pk %}?next={{ request.get_full_path|urlencode }}">{{ product.title }}</a></td>
+                            <td>
+                                <div class="studio-thumb">
+                                    <img src="{{ product.display_image_url }}" alt="{{ product.title }}">
+                                </div>
+                            </td>
+                            <td>{{ product.category.title }}</td>
+                            <td>{{ product.price|default:"Не указана" }}</td>
+                            <td>
+                                {% if product.tag %}
+                                    <span class="studio-badge">{{ product.tag }}</span>
+                                {% else %}
+                                    <span class="studio-badge studio-badge--neutral">Без метки</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{% url 'studio_product_toggle_status' product.pk %}" class="studio-inline-form js-studio-status-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <button type="submit" class="studio-badge studio-badge--button {% if not product.is_active %}studio-badge--neutral{% endif %}">
+                                        {% if product.is_active %}На сайте{% else %}Скрыт{% endif %}
+                                    </button>
+                                </form>
+                            </td>
+                            <td>
+                                <a href="{% url 'studio_product_edit' product.pk %}?next={{ request.get_full_path|urlencode }}" class="studio-button studio-button--small">Редактировать</a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="studio-empty">Ничего не найдено.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endblock %}

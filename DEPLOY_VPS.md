@@ -80,6 +80,14 @@ cp .env.vps.example .env
 nano .env
 ```
 
+Important hardening options:
+
+- `DJANGO_ADMIN_PATH` — custom URL for Django admin instead of public `/admin/`
+- `DJANGO_STUDIO_PATH` — custom URL for reserve studio panel instead of public `/studio/`
+- `DJANGO_PANEL_BASIC_AUTH_USERNAME` / `DJANGO_PANEL_BASIC_AUTH_PASSWORD` — second password layer before both protected panels
+- `DJANGO_PANEL_ALLOWED_IPS` — optional comma-separated allowlist for admin/studio access
+- `DJANGO_ADMIN_TRUST_PROXY_HEADERS=True` — keep enabled when Django is behind Nginx and Gunicorn as in this guide
+
 ## 7. Migrations and static files
 
 ```bash
@@ -87,6 +95,12 @@ source .venv/bin/activate
 python manage.py migrate
 python manage.py collectstatic --noinput
 python manage.py createsuperuser
+```
+
+Run the production security checklist before opening the site:
+
+```bash
+DJANGO_ENV=production DJANGO_DEBUG=False python manage.py check --deploy
 ```
 
 ## 8. Permissions
@@ -128,6 +142,8 @@ sudo systemctl restart nginx
 sudo apt install -y certbot python3-certbot-nginx
 sudo certbot --nginx -d example.ru -d www.example.ru
 ```
+
+If you want to lock admin and studio by IP on the reverse proxy level too, add `allow` / `deny` rules in the matching Nginx locations. This is stronger than application-only filtering.
 
 ## 12. Updates
 

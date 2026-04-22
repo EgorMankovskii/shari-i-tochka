@@ -16,6 +16,18 @@ def env_bool(name, default=False):
     return value.lower() in {'1', 'true', 'yes', 'on'}
 
 
+def env_list(name, default=''):
+    value = os.getenv(name, default)
+    return [item.strip() for item in value.split(',') if item.strip()]
+
+
+def normalize_prefix(value, fallback):
+    raw = (value or fallback).strip().strip('/')
+    if not raw:
+        raw = fallback.strip('/')
+    return f'{raw}/'
+
+
 DEBUG = env_bool('DJANGO_DEBUG', default=DJANGO_ENV != 'production')
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
@@ -26,11 +38,7 @@ if not SECRET_KEY:
         raise ImproperlyConfigured('DJANGO_SECRET_KEY must be set when DEBUG is False.')
 
 default_hosts = '127.0.0.1,localhost'
-ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.getenv('DJANGO_ALLOWED_HOSTS', default_hosts).split(',')
-    if host.strip()
-]
+ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', default_hosts)
 
 default_csrf = ','.join(
     f'https://{host}'
@@ -42,6 +50,16 @@ CSRF_TRUSTED_ORIGINS = [
     for origin in os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', default_csrf).split(',')
     if origin.strip()
 ]
+
+ADMIN_URL_PREFIX = normalize_prefix(os.getenv('DJANGO_ADMIN_PATH'), 'admin/')
+STUDIO_URL_PREFIX = normalize_prefix(os.getenv('DJANGO_STUDIO_PATH'), 'studio/')
+
+PANEL_ALLOWED_IPS = env_list('DJANGO_PANEL_ALLOWED_IPS')
+ADMIN_TRUST_PROXY_HEADERS = env_bool('DJANGO_ADMIN_TRUST_PROXY_HEADERS', True)
+PANEL_BASIC_AUTH_USERNAME = os.getenv('DJANGO_PANEL_BASIC_AUTH_USERNAME', '')
+PANEL_BASIC_AUTH_PASSWORD = os.getenv('DJANGO_PANEL_BASIC_AUTH_PASSWORD', '')
+PANEL_BASIC_AUTH_ENABLED = bool(PANEL_BASIC_AUTH_USERNAME and PANEL_BASIC_AUTH_PASSWORD)
+PROTECTED_PANEL_PREFIXES = (f'/{ADMIN_URL_PREFIX}', f'/{STUDIO_URL_PREFIX}')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -61,6 +79,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'catalog.middleware.ProtectedPanelMiddleware',
 ]
 
 ROOT_URLCONF = 'sitecore.urls'
@@ -132,10 +151,15 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = env_bool('DJANGO_SECURE_SSL_REDIRECT', True)
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    CSRF_COOKIE_SAMESITE = 'Lax'
     SECURE_HSTS_SECONDS = int(os.getenv('DJANGO_SECURE_HSTS_SECONDS', '31536000'))
     SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool('DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS', True)
     SECURE_HSTS_PRELOAD = env_bool('DJANGO_SECURE_HSTS_PRELOAD', True)
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_REFERRER_POLICY = 'same-origin'
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+    X_FRAME_OPTIONS = 'DENY'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

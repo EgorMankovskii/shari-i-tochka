@@ -40,14 +40,25 @@
                             class="product-card__image js-product-card-image"
                             src="{{ product.display_image_url }}"
                             alt="{{ product.title }}"
-                            data-default-position="{{ product.object_position }}"
-                            style="object-position: {{ product.object_position }};"
+                            data-crop-x="{{ product.crop_x }}"
+                            data-crop-y="{{ product.crop_y }}"
+                            data-crop-scale="{{ product.crop_scale }}"
                         >
                     </a>
                     <div class="product-card__slides" hidden>
-                        <span data-slide-src="{{ product.display_image_url }}" data-slide-position="{{ product.object_position }}"></span>
+                        <span
+                            data-slide-src="{{ product.display_image_url }}"
+                            data-slide-crop-x="{{ product.crop_x }}"
+                            data-slide-crop-y="{{ product.crop_y }}"
+                            data-slide-crop-scale="{{ product.crop_scale }}"
+                        ></span>
                         {% for image in product.gallery_images.all %}
-                            <span data-slide-src="{{ image.display_image_url }}" data-slide-position="{{ image.object_position }}"></span>
+                            <span
+                                data-slide-src="{{ image.display_image_url }}"
+                                data-slide-crop-x="{{ image.crop_x }}"
+                                data-slide-crop-y="{{ image.crop_y }}"
+                                data-slide-crop-scale="{{ image.crop_scale }}"
+                            ></span>
                         {% endfor %}
                     </div>
                     <h3><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h3>

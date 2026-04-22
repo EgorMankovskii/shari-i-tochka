@@ -1,0 +1,237 @@
+{% extends "studio/base.html" %}
+{% load static %}
+
+{% block title %}Studio | Товар{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'admin/css/product_cropper.css' %}?v=20260423-cover-fix">
+{% endblock %}
+{% block studio_title %}{{ page_title }}{% endblock %}
+{% block studio_subtitle %}<p class="studio-header__subtitle">Резервная форма для карточек товара, дополнительных фото, видео и кадрирования.</p>{% endblock %}
+
+{% block studio_content %}
+    <form method="post" enctype="multipart/form-data" class="studio-form">
+        {% csrf_token %}
+        {% if next_url %}
+            <input type="hidden" name="next" value="{{ next_url }}">
+        {% endif %}
+        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+
+        <div class="studio-submit-row">
+            <button type="submit" name="save" class="studio-button studio-button--accent">Сохранить</button>
+            <button type="submit" name="save_continue" class="studio-button">Сохранить и продолжить</button>
+            <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'studio_product_list' %}{% endif %}" class="studio-button studio-button--ghost">Назад к списку</a>
+            {% if product %}
+                <a href="{{ product.get_absolute_url }}" class="studio-button studio-button--ghost" target="_blank" rel="noreferrer">Открыть на сайте</a>
+            {% endif %}
+        </div>
+
+        <section class="studio-form__section">
+            <h2 class="studio-form__section-title">Основное</h2>
+            <div class="studio-form__grid">
+                {% for field in form %}
+                    {% if field.name == 'static_image' or field.name == 'image' or field.name == 'crop_x' or field.name == 'crop_y' or field.name == 'crop_scale' or field.name == 'is_featured' or field.name == 'is_active' or field.name == 'sort_order' %}
+                    {% else %}
+                        <div class="studio-field">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<div class="studio-field__help">{{ field.help_text|safe }}</div>{% endif %}
+                            {% for error in field.errors %}<div class="studio-field__errors">{{ error }}</div>{% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="studio-form__section">
+            <h2 class="studio-form__section-title">Обложка</h2>
+            <div class="studio-form__grid">
+                {% for field in form %}
+                    {% if field.name == 'static_image' or field.name == 'image' %}
+                        <div class="studio-field">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}<div class="studio-field__help">{{ field.help_text|safe }}</div>{% endif %}
+                            {% for error in field.errors %}<div class="studio-field__errors">{{ error }}</div>{% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="studio-preview-note">{{ crop_preview }}</div>
+        </section>
+
+        <section class="studio-form__section">
+            <h2 class="studio-form__section-title">Публикация</h2>
+            <div class="studio-form__grid">
+                {% for field in form %}
+                    {% if field.name == 'is_featured' or field.name == 'is_active' or field.name == 'sort_order' %}
+                        <div class="studio-field">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {% if field.field.widget.input_type == 'checkbox' %}
+                                <div class="studio-field__checkbox-wrap">{{ field }}</div>
+                            {% else %}
+                                {{ field }}
+                            {% endif %}
+                            {% if field.help_text %}<div class="studio-field__help">{{ field.help_text|safe }}</div>{% endif %}
+                            {% for error in field.errors %}<div class="studio-field__errors">{{ error }}</div>{% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="studio-form__section">
+            <div class="studio-toolbar">
+                <h2 class="studio-form__section-title" style="margin:0;">Дополнительные изображения</h2>
+                <div class="studio-inline-actions">
+                    <button type="button" class="studio-icon-button" data-inline-add="images">+</button>
+                </div>
+            </div>
+            {{ image_formset.management_form }}
+            <div class="studio-inline-list" data-inline-formset="images" data-inline-total-id="{{ image_formset.prefix }}-TOTAL_FORMS">
+                {% for item in image_croppers %}
+                    <div class="studio-inline-card inline-related" data-inline-card data-existing="{% if item.form.instance.pk %}true{% else %}false{% endif %}">
+                        <div class="studio-inline-card__top">
+                            <h3 class="studio-inline-card__title" data-inline-title>Фото {{ forloop.counter }}</h3>
+                            <div class="studio-inline-actions">
+                                <div class="studio-inline-card__delete-input">{% if item.form.DELETE %}{{ item.form.DELETE }}{% endif %}</div>
+                                <button type="button" class="studio-icon-button studio-icon-button--ghost studio-icon-button--soft" data-inline-remove>−</button>
+                            </div>
+                        </div>
+                        {% for hidden in item.form.hidden_fields %}{{ hidden }}{% endfor %}
+                        <div class="studio-form__grid">
+                            {% for field in item.form.visible_fields %}
+                                {% if field.name == 'crop_x' or field.name == 'crop_y' or field.name == 'crop_scale' or field.name == 'DELETE' %}
+                                    {% if field.name != 'DELETE' %}{{ field }}{% endif %}
+                                {% else %}
+                                    <div class="studio-field">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {% if field.field.widget.input_type == 'checkbox' %}
+                                            <div class="studio-field__checkbox-wrap">{{ field }}</div>
+                                        {% else %}
+                                            {{ field }}
+                                        {% endif %}
+                                        {% for error in field.errors %}<div class="studio-field__errors">{{ error }}</div>{% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="studio-preview-note">{{ item.crop_preview }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="studio-inline-footer">
+                <button type="button" class="studio-button studio-button--ghost" data-inline-add="images">+ Добавить ещё фото</button>
+            </div>
+            <template id="images-empty-form-template">
+                <div class="studio-inline-card inline-related" data-inline-card data-existing="false">
+                    <div class="studio-inline-card__top">
+                        <h3 class="studio-inline-card__title" data-inline-title>Фото __index__</h3>
+                        <div class="studio-inline-actions">
+                            <div class="studio-inline-card__delete-input">{{ image_empty_form.DELETE }}</div>
+                            <button type="button" class="studio-icon-button studio-icon-button--ghost studio-icon-button--soft" data-inline-remove>−</button>
+                        </div>
+                    </div>
+                    {% for hidden in image_empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+                    <div class="studio-form__grid">
+                        {% for field in image_empty_form.visible_fields %}
+                            {% if field.name == 'crop_x' or field.name == 'crop_y' or field.name == 'crop_scale' or field.name == 'DELETE' %}
+                                {% if field.name != 'DELETE' %}{{ field }}{% endif %}
+                            {% else %}
+                                <div class="studio-field">
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {% if field.field.widget.input_type == 'checkbox' %}
+                                        <div class="studio-field__checkbox-wrap">{{ field }}</div>
+                                    {% else %}
+                                        {{ field }}
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="studio-preview-note">{{ image_empty_crop_preview }}</div>
+                </div>
+            </template>
+        </section>
+
+        <section class="studio-form__section">
+            <div class="studio-toolbar">
+                <h2 class="studio-form__section-title" style="margin:0;">Видео</h2>
+                <div class="studio-inline-actions">
+                    <button type="button" class="studio-icon-button" data-inline-add="videos">+</button>
+                </div>
+            </div>
+            {{ video_formset.management_form }}
+            <div class="studio-inline-list" data-inline-formset="videos" data-inline-total-id="{{ video_formset.prefix }}-TOTAL_FORMS">
+                {% for video_form in video_formset.forms %}
+                    <div class="studio-inline-card" data-inline-card data-existing="{% if video_form.instance.pk %}true{% else %}false{% endif %}">
+                        <div class="studio-inline-card__top">
+                            <h3 class="studio-inline-card__title" data-inline-title>Видео {{ forloop.counter }}</h3>
+                            <div class="studio-inline-actions">
+                                <div class="studio-inline-card__delete-input">{% if video_form.DELETE %}{{ video_form.DELETE }}{% endif %}</div>
+                                <button type="button" class="studio-icon-button studio-icon-button--ghost studio-icon-button--soft" data-inline-remove>−</button>
+                            </div>
+                        </div>
+                        {% for hidden in video_form.hidden_fields %}{{ hidden }}{% endfor %}
+                        <div class="studio-form__grid">
+                            {% for field in video_form.visible_fields %}
+                                {% if field.name != 'DELETE' %}
+                                    <div class="studio-field">
+                                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                        {% if field.field.widget.input_type == 'checkbox' %}
+                                            <div class="studio-field__checkbox-wrap">{{ field }}</div>
+                                        {% else %}
+                                            {{ field }}
+                                        {% endif %}
+                                        {% for error in field.errors %}<div class="studio-field__errors">{{ error }}</div>{% endfor %}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="studio-inline-footer">
+                <button type="button" class="studio-button studio-button--ghost" data-inline-add="videos">+ Добавить ещё видео</button>
+            </div>
+            <template id="videos-empty-form-template">
+                <div class="studio-inline-card" data-inline-card data-existing="false">
+                    <div class="studio-inline-card__top">
+                        <h3 class="studio-inline-card__title" data-inline-title>Видео __index__</h3>
+                        <div class="studio-inline-actions">
+                            <div class="studio-inline-card__delete-input">{{ video_empty_form.DELETE }}</div>
+                            <button type="button" class="studio-icon-button studio-icon-button--ghost studio-icon-button--soft" data-inline-remove>−</button>
+                        </div>
+                    </div>
+                    {% for hidden in video_empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+                    <div class="studio-form__grid">
+                        {% for field in video_empty_form.visible_fields %}
+                            {% if field.name != 'DELETE' %}
+                                <div class="studio-field">
+                                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                    {% if field.field.widget.input_type == 'checkbox' %}
+                                        <div class="studio-field__checkbox-wrap">{{ field }}</div>
+                                    {% else %}
+                                        {{ field }}
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </template>
+        </section>
+
+        <div class="studio-form__actions">
+            <button type="submit" name="save" class="studio-button studio-button--accent">Сохранить</button>
+            <button type="submit" name="save_continue" class="studio-button">Сохранить и продолжить</button>
+            <a href="{% if next_url %}{{ next_url }}{% else %}{% url 'studio_product_list' %}{% endif %}" class="studio-button studio-button--ghost">Назад к списку</a>
+            {% if product %}
+                <a href="{{ product.get_absolute_url }}" class="studio-button studio-button--ghost" target="_blank" rel="noreferrer">Открыть на сайте</a>
+            {% endif %}
+        </div>
+    </form>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'admin/js/product_cropper.js' %}?v=20260423-cover-fix"></script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "studio/base.html" %}
+
+{% block title %}Studio | Пользователь{% endblock %}
+{% block studio_title %}{{ page_title }}{% endblock %}
+{% block studio_subtitle %}<p class="studio-header__subtitle">Резервная форма для {{ entity_name }}. Доступ к этому разделу есть только у суперпользователя.</p>{% endblock %}
+
+{% block studio_content %}
+    <form method="post" class="studio-form">
+        {% csrf_token %}
+        {% if next_url %}
+            <input type="hidden" name="next" value="{{ next_url }}">
+        {% endif %}
+        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+
+        <div class="studio-submit-row">
+            <button type="submit" name="save" class="studio-button studio-button--accent">Сохранить</button>
+            <button type="submit" name="save_continue" class="studio-button">Сохранить и продолжить</button>
+            <a href="{% if next_url %}{{ next_url }}{% else %}{% url back_url_name %}{% endif %}" class="studio-button studio-button--ghost">Назад к списку</a>
+        </div>
+
+        <section class="studio-form__section">
+            <h2 class="studio-form__section-title">Основное</h2>
+            <div class="studio-form__grid">
+                {% for field in form %}
+                    <div class="studio-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {% if field.field.widget.input_type == 'checkbox' %}
+                            <div class="studio-field__checkbox-wrap">{{ field }}</div>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+                        {% if field.help_text %}<div class="studio-field__help">{{ field.help_text|safe }}</div>{% endif %}
+                        {% for error in field.errors %}<div class="studio-field__errors">{{ error }}</div>{% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <div class="studio-form__actions">
+            <button type="submit" name="save" class="studio-button studio-button--accent">Сохранить</button>
+            <button type="submit" name="save_continue" class="studio-button">Сохранить и продолжить</button>
+            <a href="{% if next_url %}{{ next_url }}{% else %}{% url back_url_name %}{% endif %}" class="studio-button studio-button--ghost">Назад к списку</a>
+        </div>
+    </form>
+{% endblock %}

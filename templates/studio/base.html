@@ -1,0 +1,96 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Studio | Шары и Точка{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/studio.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="studio-body">
+    <div class="studio-layout">
+        <aside class="studio-sidebar">
+            <div class="studio-brand">
+                <span class="studio-brand__eyebrow">Reserve panel</span>
+                <a href="{% url 'studio_home' %}" class="studio-brand__title">Шары и Точка</a>
+            </div>
+
+            <nav class="studio-nav" aria-label="Навигация панели">
+                {% for item in studio_nav %}
+                    <a
+                        href="{{ item.href }}"
+                        class="studio-nav__link{% if item.match and item.match in request.resolver_match.url_name %} is-active{% endif %}"
+                    >
+                        <span>{{ item.title }}</span>
+                        {% if item.external %}<span>↗</span>{% endif %}
+                    </a>
+                {% endfor %}
+            </nav>
+
+            <p class="studio-sidebar__section-title">Быстрые действия</p>
+            <div class="studio-quicklinks">
+                {% for item in studio_quicklinks %}
+                    <a href="{{ item.href }}">{{ item.title }}</a>
+                {% endfor %}
+            </div>
+
+            <div class="studio-sidebar__stats">
+                <div class="studio-stat">
+                    <span class="studio-stat__value">{{ studio_stats.products }}</span>
+                    <span class="studio-stat__label">карточек в каталоге</span>
+                </div>
+                <div class="studio-stat">
+                    <span class="studio-stat__value">{{ studio_stats.active_products }}</span>
+                    <span class="studio-stat__label">показываются на сайте</span>
+                </div>
+                <div class="studio-stat">
+                    <span class="studio-stat__value">{{ studio_stats.categories }}</span>
+                    <span class="studio-stat__label">категорий</span>
+                </div>
+                {% if studio_stats.users is not None %}
+                    <div class="studio-stat">
+                        <span class="studio-stat__value">{{ studio_stats.users }}</span>
+                        <span class="studio-stat__label">пользователей</span>
+                    </div>
+                {% endif %}
+                {% if studio_stats.groups is not None %}
+                    <div class="studio-stat">
+                        <span class="studio-stat__value">{{ studio_stats.groups }}</span>
+                        <span class="studio-stat__label">групп</span>
+                    </div>
+                {% endif %}
+            </div>
+        </aside>
+
+        <main class="studio-main">
+            <header class="studio-header">
+                <div>
+                    <h1 class="studio-header__title">{% block studio_title %}Studio{% endblock %}</h1>
+                    {% block studio_subtitle %}{% endblock %}
+                </div>
+                <div class="studio-header__actions">
+                    <a href="{% url 'home' %}" class="studio-button studio-button--ghost" target="_blank" rel="noreferrer">Открыть сайт</a>
+                    <a href="{% url 'admin:logout' %}" class="studio-button">Выйти</a>
+                </div>
+            </header>
+
+            {% if messages %}
+                <div class="studio-alerts">
+                    {% for message in messages %}
+                        <div class="studio-alert studio-alert--{{ message.tags|default:'info' }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block studio_content %}{% endblock %}
+        </main>
+    </div>
+
+    <script src="{% static 'js/studio.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

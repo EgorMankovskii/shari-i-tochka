@@ -406,6 +406,9 @@ a.button {
     display: block;
     overflow: hidden;
     border-radius: 20px;
+    position: relative;
+    aspect-ratio: 4 / 5.5;
+    background: linear-gradient(135deg, #f4d8d0, #fff2e9);
 }
 
 .product-card__image-link img,
@@ -413,6 +416,16 @@ a.button {
     margin-bottom: 0;
     transition: transform 900ms ease, opacity 520ms ease;
     will-change: transform, opacity;
+}
+
+.crop-managed-media {
+    position: absolute;
+    max-width: none;
+    width: auto;
+    height: auto;
+    margin: 0;
+    border-radius: 0 !important;
+    object-fit: unset !important;
 }
 
 .product-card:hover {
@@ -517,19 +530,19 @@ a.button {
 
 .product-gallery__main img,
 .product-gallery__main video {
-    aspect-ratio: 4 / 4.8;
     object-fit: cover;
-    border-radius: 18px;
-    width: 100%;
     display: block;
 }
 
 .product-gallery__main {
     display: block;
     width: 100%;
+    aspect-ratio: 4 / 5.5;
     background: transparent;
     touch-action: pan-y;
     overflow: hidden;
+    position: relative;
+    border-radius: 18px;
 }
 
 .product-gallery__thumbs {
@@ -574,11 +587,18 @@ a.button {
     scroll-snap-align: start;
 }
 
+.product-gallery__thumb-media {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    aspect-ratio: 1 / 1.15;
+    background: linear-gradient(135deg, #f4d8d0, #fff2e9);
+}
+
 .product-gallery__thumb img,
 .product-gallery__thumb video {
-    aspect-ratio: 1 / 1.15;
     object-fit: cover;
-    border-radius: 14px;
     margin-bottom: 0;
     width: 100%;
     display: block;
@@ -625,6 +645,10 @@ a.button {
     display: block;
     width: 100%;
     background: transparent;
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+    aspect-ratio: 4 / 5.5;
 }
 
 .product-extra-card__button img {
@@ -633,6 +657,10 @@ a.button {
 
 .product-extra-card__button:hover img {
     transform: scale(1.02);
+}
+
+.product-extra-card img {
+    margin-bottom: 0;
 }
 
 .about-layout {

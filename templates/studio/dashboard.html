@@ -1,0 +1,56 @@
+{% extends "studio/base.html" %}
+
+{% block title %}Studio | Обзор{% endblock %}
+{% block studio_title %}Резервная панель каталога{% endblock %}
+{% block studio_subtitle %}<p class="studio-header__subtitle">Новая внутренняя панель для товаров и категорий. Стандартный Django admin остаётся как запасной вариант.</p>{% endblock %}
+
+{% block studio_content %}
+    <div class="studio-grid studio-grid--stats">
+        <section class="studio-card studio-metric">
+            <span class="studio-metric__value">{{ studio_stats.products }}</span>
+            <span class="studio-metric__label">всего карточек товаров</span>
+        </section>
+        <section class="studio-card studio-metric">
+            <span class="studio-metric__value">{{ studio_stats.active_products }}</span>
+            <span class="studio-metric__label">активных товаров на сайте</span>
+        </section>
+        <section class="studio-card studio-metric">
+            <span class="studio-metric__value">{{ studio_stats.categories }}</span>
+            <span class="studio-metric__label">категорий в каталоге</span>
+        </section>
+    </div>
+
+    <div class="studio-grid" style="grid-template-columns: 1.1fr 0.9fr; margin-top: 20px;">
+        <section class="studio-card">
+            <div class="studio-toolbar">
+                <h2 class="studio-card__title">Недавно обновлённые товары</h2>
+                <a href="{% url 'studio_product_list' %}" class="studio-button">Все товары</a>
+            </div>
+            {% if recent_products %}
+                <div class="studio-link-list">
+                    {% for product in recent_products %}
+                        <a href="{% url 'studio_product_edit' product.pk %}">{{ product.title }} · {{ product.category.title }}</a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="studio-empty">Пока нет ни одной карточки товара.</p>
+            {% endif %}
+        </section>
+
+        <section class="studio-card">
+            <div class="studio-toolbar">
+                <h2 class="studio-card__title">Категории</h2>
+                <a href="{% url 'studio_category_list' %}" class="studio-button">Все категории</a>
+            </div>
+            {% if recent_categories %}
+                <div class="studio-link-list">
+                    {% for category in recent_categories %}
+                        <a href="{% url 'studio_category_edit' category.pk %}">{{ category.title }}</a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="studio-empty">Пока нет категорий.</p>
+            {% endif %}
+        </section>
+    </div>
+{% endblock %}

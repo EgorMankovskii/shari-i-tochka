@@ -15,21 +15,23 @@
     );
 
     const findField = (scope, fieldName) => (
-        scope.querySelector(`[name$="-${fieldName}"]`) ||
         scope.querySelector(`[name="${fieldName}"]`) ||
-        scope.querySelector(`#id_${fieldName}`)
+        scope.querySelector(`#id_${fieldName}`) ||
+        scope.querySelector(`[name$="-${fieldName}"]`)
     );
 
     const findImageInput = (scope) => (
-        scope.querySelector('input[type="file"][name$="-image"]') ||
         scope.querySelector('input[type="file"][name="image"]') ||
+        scope.querySelector('input[type="file"][id="id_image"]') ||
+        scope.querySelector('input[type="file"][name$="-image"]') ||
         scope.querySelector('input[type="file"][id$="-image"]') ||
         scope.querySelector('input[type="file"]')
     );
 
     const findClearInput = (scope) => (
-        scope.querySelector('input[type="checkbox"][name$="-image-clear"]') ||
-        scope.querySelector('input[type="checkbox"][name="image-clear"]')
+        scope.querySelector('input[type="checkbox"][name="image-clear"]') ||
+        scope.querySelector('input[type="checkbox"][id="id_image-clear"]') ||
+        scope.querySelector('input[type="checkbox"][name$="-image-clear"]')
     );
 
     const initCropper = (root) => {

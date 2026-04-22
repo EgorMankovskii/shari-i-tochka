@@ -1,8 +1,16 @@
+from django.db.models import Prefetch, Q
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
 from .data import CONTACTS, DELIVERY_INFO, HOME_PAGE
-from .models import Category, Product
+from .models import Category, Product, ProductImage
+
+
+GALLERY_IMAGE_FILTER = Q(image__gt='') | Q(static_image__gt='')
+GALLERY_IMAGE_PREFETCH = Prefetch(
+    'gallery_images',
+    queryset=ProductImage.objects.filter(GALLERY_IMAGE_FILTER).order_by('sort_order', 'id'),
+)
 
 
 def shared_context():
@@ -24,7 +32,7 @@ def home(request):
     context = shared_context() | {
         'page': HOME_PAGE,
         'categories': Category.objects.filter(is_visible=True).order_by('sort_order', 'title'),
-        'featured_products': Product.objects.select_related('category').prefetch_related('gallery_images').filter(
+        'featured_products': Product.objects.select_related('category').prefetch_related(GALLERY_IMAGE_PREFETCH).filter(
             is_active=True,
             is_featured=True,
             category__is_visible=True,
@@ -40,23 +48,23 @@ def category_page(request, slug):
     category = get_object_or_404(Category, slug=slug, is_visible=True)
     context = shared_context() | {
         'category': category,
-        'products': category.products.prefetch_related('gallery_images').filter(is_active=True).order_by('sort_order', 'title'),
+        'products': category.products.prefetch_related(GALLERY_IMAGE_PREFETCH).filter(is_active=True).order_by('sort_order', 'title'),
     }
     return render(request, 'category.html', context)
 
 
 def product_detail(request, pk):
     product = get_object_or_404(
-        Product.objects.select_related('category').prefetch_related('gallery_images', 'gallery_videos'),
+        Product.objects.select_related('category').prefetch_related(GALLERY_IMAGE_PREFETCH, 'gallery_videos'),
         pk=pk,
         is_active=True,
         category__is_visible=True,
     )
     context = shared_context() | {
         'product': product,
-        'gallery_images': product.gallery_images.all(),
+        'gallery_images': product.gallery_images.filter(GALLERY_IMAGE_FILTER),
         'gallery_videos': product.gallery_videos.all(),
-        'related_products': product.category.products.prefetch_related('gallery_images').filter(is_active=True).exclude(pk=product.pk)[:3],
+        'related_products': product.category.products.prefetch_related(GALLERY_IMAGE_PREFETCH).filter(is_active=True).exclude(pk=product.pk)[:3],
     }
     return render(request, 'product_detail.html', context)
 
