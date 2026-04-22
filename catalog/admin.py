@@ -6,7 +6,7 @@ from .models import Category, Product, ProductImage, ProductVideo
 
 
 def render_crop_preview(obj, empty_text):
-    image_url = obj.display_image_url if obj else ""
+    image_url = obj.image.url if obj and getattr(obj, "image", None) else ""
     crop_x = getattr(obj, "crop_x", 50) if obj else 50
     crop_y = getattr(obj, "crop_y", 50) if obj else 50
     crop_scale = getattr(obj, "crop_scale", 100) if obj else 100
@@ -18,6 +18,7 @@ def render_crop_preview(obj, empty_text):
             '<div class="product-cropper__empty">{}</div>'
             '<div class="product-cropper__workspace" hidden>'
             '<div class="product-cropper__stage">'
+            '<div class="product-cropper__image-shell">'
             '<img class="product-cropper__image" alt="Предпросмотр изображения">'
             '<div class="product-cropper__frame"></div>'
             '<button type="button" class="product-cropper__handle product-cropper__handle--n" data-resize-dir="n"></button>'
@@ -29,8 +30,10 @@ def render_crop_preview(obj, empty_text):
             '<button type="button" class="product-cropper__handle product-cropper__handle--se" data-resize-dir="se"></button>'
             '<button type="button" class="product-cropper__handle product-cropper__handle--sw" data-resize-dir="sw"></button>'
             "</div>"
+            "</div>"
             '<div class="product-cropper__preview-wrap">'
             '<div class="product-cropper__preview-title">Что попадет в карточку</div>'
+            '<div class="product-cropper__hint">Рамка двигается мышкой, а размер меняется за углы и края.</div>'
             '<div class="product-cropper__preview">'
             '<canvas class="product-cropper__preview-canvas" width="240" height="330" aria-label="Предпросмотр обрезки"></canvas>'
             "</div>"
@@ -49,9 +52,9 @@ def render_crop_preview(obj, empty_text):
 class CropperMediaMixin:
     class Media:
         css = {
-            "all": ("admin/css/product_cropper.css?v=3",),
+            "all": ("admin/css/product_cropper.css?v=4",),
         }
-        js = ("admin/js/product_cropper.js?v=3",)
+        js = ("admin/js/product_cropper.js?v=4",)
 
 
 class ProductInline(admin.TabularInline):
