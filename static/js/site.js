@@ -65,67 +65,99 @@ const resolveCropBox = (naturalWidth, naturalHeight, cropScale) => {
     };
 };
 
-const getCropContainer = (image) => (
-    image.closest(".product-gallery__thumb-media") ||
-    image.closest(".product-card__image-link") ||
-    image.closest(".product-gallery__main") ||
-    image.closest(".product-extra-card__button")
+const getCropContainer = (media) => (
+    media.closest(".product-gallery__thumb-media") ||
+    media.closest(".product-card__image-link") ||
+    media.closest(".product-gallery__main") ||
+    media.closest(".product-extra-card__button")
 );
 
-const applySavedCrop = (image) => {
-    if (!image) {
+const getMediaNaturalSize = (media) => {
+    if (!media) {
+        return { width: 0, height: 0 };
+    }
+
+    if (media.tagName === "VIDEO") {
+        return {
+            width: media.videoWidth || 0,
+            height: media.videoHeight || 0,
+        };
+    }
+
+    return {
+        width: media.naturalWidth || 0,
+        height: media.naturalHeight || 0,
+    };
+};
+
+const applySavedCrop = (media) => {
+    if (!media) {
         return;
     }
 
-    const container = getCropContainer(image);
-    const cropScale = Math.max(Number(image.dataset.cropScale || 100), 20);
-    const cropX = clamp(Number(image.dataset.cropX || 50), 0, 100);
-    const cropY = clamp(Number(image.dataset.cropY || 50), 0, 100);
+    const container = getCropContainer(media);
+    const cropScale = Math.max(Number(media.dataset.cropScale || 100), 20);
+    const cropX = clamp(Number(media.dataset.cropX || 50), 0, 100);
+    const cropY = clamp(Number(media.dataset.cropY || 50), 0, 100);
+    const { width: naturalWidth, height: naturalHeight } = getMediaNaturalSize(media);
 
-    if (!container || !image.naturalWidth || !image.naturalHeight || !container.clientWidth || !container.clientHeight) {
-        image.classList.remove("crop-managed-media");
-        image.style.removeProperty("left");
-        image.style.removeProperty("top");
-        image.style.removeProperty("width");
-        image.style.removeProperty("height");
+    if (!container || !naturalWidth || !naturalHeight || !container.clientWidth || !container.clientHeight) {
+        media.classList.remove("crop-managed-media");
+        media.style.removeProperty("left");
+        media.style.removeProperty("top");
+        media.style.removeProperty("width");
+        media.style.removeProperty("height");
         return;
     }
 
-    const cropBox = resolveCropBox(image.naturalWidth, image.naturalHeight, cropScale);
+    const cropBox = resolveCropBox(naturalWidth, naturalHeight, cropScale);
     const renderScale = Math.max(
         container.clientWidth / cropBox.width,
         container.clientHeight / cropBox.height,
     );
-    const renderWidth = image.naturalWidth * renderScale;
-    const renderHeight = image.naturalHeight * renderScale;
-    const centerX = (cropX / 100) * image.naturalWidth;
-    const centerY = (cropY / 100) * image.naturalHeight;
+    const renderWidth = naturalWidth * renderScale;
+    const renderHeight = naturalHeight * renderScale;
+    const centerX = (cropX / 100) * naturalWidth;
+    const centerY = (cropY / 100) * naturalHeight;
     const left = container.clientWidth / 2 - centerX * renderScale;
     const top = container.clientHeight / 2 - centerY * renderScale;
 
-    image.classList.add("crop-managed-media");
-    image.style.width = `${renderWidth}px`;
-    image.style.height = `${renderHeight}px`;
-    image.style.left = `${left}px`;
-    image.style.top = `${top}px`;
+    media.classList.add("crop-managed-media");
+    media.style.width = `${renderWidth}px`;
+    media.style.height = `${renderHeight}px`;
+    media.style.left = `${left}px`;
+    media.style.top = `${top}px`;
 };
 
-const scheduleCropApply = (image) => {
-    if (!image) {
+const scheduleCropApply = (media) => {
+    if (!media) {
         return;
     }
 
-    if (image.complete && image.naturalWidth) {
-        applySavedCrop(image);
+    const { width: naturalWidth } = getMediaNaturalSize(media);
+
+    if (media.tagName === "VIDEO") {
+        if (naturalWidth) {
+            applySavedCrop(media);
+            return;
+        }
+
+        media.addEventListener("loadedmetadata", () => applySavedCrop(media), { once: true });
+        media.addEventListener("loadeddata", () => applySavedCrop(media), { once: true });
         return;
     }
 
-    image.addEventListener("load", () => applySavedCrop(image), { once: true });
+    if (media.complete && naturalWidth) {
+        applySavedCrop(media);
+        return;
+    }
+
+    media.addEventListener("load", () => applySavedCrop(media), { once: true });
 };
 
 const applyAllSavedCrops = () => {
-    document.querySelectorAll("img[data-crop-scale]").forEach((image) => {
-        scheduleCropApply(image);
+    document.querySelectorAll("img[data-crop-scale], video[data-crop-scale]").forEach((media) => {
+        scheduleCropApply(media);
     });
 };
 
@@ -345,8 +377,14 @@ if (galleryRoot && lightbox) {
             mainVideo.hidden = false;
             mainVideo.src = item.videoSrc;
             mainVideo.muted = item.videoMuted;
+            mainVideo.dataset.cropX = item.cropX;
+            mainVideo.dataset.cropY = item.cropY;
+            mainVideo.dataset.cropScale = item.cropScale;
             mainVideo.load();
-            mainVideo.addEventListener("loadeddata", () => startVideo(mainVideo), { once: true });
+            mainVideo.addEventListener("loadeddata", () => {
+                scheduleCropApply(mainVideo);
+                startVideo(mainVideo);
+            }, { once: true });
         } else {
             stopVideo(mainVideo);
             mainVideo.hidden = true;
@@ -379,8 +417,14 @@ if (galleryRoot && lightbox) {
             lightboxVideo.hidden = false;
             lightboxVideo.src = item.videoSrc;
             lightboxVideo.muted = item.videoMuted;
+            lightboxVideo.dataset.cropX = item.cropX;
+            lightboxVideo.dataset.cropY = item.cropY;
+            lightboxVideo.dataset.cropScale = item.cropScale;
             lightboxVideo.load();
-            lightboxVideo.addEventListener("loadeddata", () => startVideo(lightboxVideo), { once: true });
+            lightboxVideo.addEventListener("loadeddata", () => {
+                scheduleCropApply(lightboxVideo);
+                startVideo(lightboxVideo);
+            }, { once: true });
         } else {
             stopVideo(lightboxVideo);
             lightboxVideo.hidden = true;

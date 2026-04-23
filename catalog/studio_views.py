@@ -9,6 +9,7 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from .forms import (
     CategoryStudioForm,
@@ -95,21 +96,34 @@ def _build_next_query(next_url):
     return f"?{urlencode({'next': next_url})}"
 
 
-def render_crop_preview(obj, empty_text):
-    image_url = obj.image.url if obj and getattr(obj, "image", None) else ""
+def render_crop_preview(obj, empty_text, media_kind="image"):
+    media_url = ""
+    if obj:
+        if media_kind == "video" and getattr(obj, "video", None):
+            media_url = obj.video.url
+        elif media_kind == "image" and getattr(obj, "image", None):
+            media_url = obj.image.url
+
     crop_x = getattr(obj, "crop_x", 50) if obj else 50
     crop_y = getattr(obj, "crop_y", 50) if obj else 50
     crop_scale = getattr(obj, "crop_scale", 100) if obj else 100
+    cropper_attr = "data-product-video-cropper" if media_kind == "video" else "data-product-cropper"
+    media_attr_name = "data-video-url" if media_kind == "video" else "data-image-url"
+    media_markup = (
+        '<video class="product-cropper__video" muted playsinline preload="metadata"></video>'
+        if media_kind == "video"
+        else '<img class="product-cropper__image" alt="Предпросмотр изображения">'
+    )
 
     return format_html(
         (
-            '<div class="product-cropper" data-product-cropper '
-            'data-image-url="{}" data-crop-x="{}" data-crop-y="{}" data-crop-scale="{}">'
+            '<div class="product-cropper" {} data-cropper-kind="{}" {}="{}" '
+            'data-crop-x="{}" data-crop-y="{}" data-crop-scale="{}">'
             '<div class="product-cropper__empty">{}</div>'
             '<div class="product-cropper__workspace" hidden>'
             '<div class="product-cropper__stage">'
             '<div class="product-cropper__image-shell">'
-            '<img class="product-cropper__image" alt="Предпросмотр изображения">'
+            '{}'
             '<div class="product-cropper__frame"></div>'
             '<button type="button" class="product-cropper__handle product-cropper__handle--n" data-resize-dir="n"></button>'
             '<button type="button" class="product-cropper__handle product-cropper__handle--e" data-resize-dir="e"></button>'
@@ -131,11 +145,15 @@ def render_crop_preview(obj, empty_text):
             "</div>"
             "</div>"
         ),
-        image_url,
+        mark_safe(cropper_attr),
+        media_kind,
+        mark_safe(media_attr_name),
+        media_url,
         crop_x,
         crop_y,
         crop_scale,
         empty_text,
+        mark_safe(media_markup),
     )
 
 
@@ -281,6 +299,17 @@ def _studio_product_form(request, product=None):
         }
         for image_form in image_formset.forms
     ]
+    video_croppers = [
+        {
+            "form": video_form,
+            "crop_preview": render_crop_preview(
+                video_form.instance,
+                "Загрузи видео товара и выставь область кадра, которая должна быть видна в карточке.",
+                media_kind="video",
+            ),
+        }
+        for video_form in video_formset.forms
+    ]
 
     context = studio_shared_context(request) | {
         "page_title": "Новая карточка товара" if is_create else f"Редактирование: {product.title}",
@@ -294,7 +323,13 @@ def _studio_product_form(request, product=None):
             "Загрузи дополнительное фото и перетаскивай рамку мышкой, чтобы выбрать кадр для миниатюры товара.",
         ),
         "video_formset": video_formset,
+        "video_croppers": video_croppers,
         "video_empty_form": video_formset.empty_form,
+        "video_empty_crop_preview": render_crop_preview(
+            None,
+            "Загрузи видео товара и выставь область кадра, которая должна быть видна в карточке.",
+            media_kind="video",
+        ),
         "crop_preview": crop_markup,
         "is_create": is_create,
         "next_url": next_url,

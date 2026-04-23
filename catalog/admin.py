@@ -1,25 +1,39 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from .forms import ProductAdminForm, ProductImageAdminForm, ProductVideoAdminForm
 from .models import Category, Product, ProductImage, ProductVideo
 
 
-def render_crop_preview(obj, empty_text):
-    image_url = obj.image.url if obj and getattr(obj, "image", None) else ""
+def render_crop_preview(obj, empty_text, media_kind="image"):
+    media_url = ""
+    if obj:
+        if media_kind == "video" and getattr(obj, "video", None):
+            media_url = obj.video.url
+        elif media_kind == "image" and getattr(obj, "image", None):
+            media_url = obj.image.url
+
     crop_x = getattr(obj, "crop_x", 50) if obj else 50
     crop_y = getattr(obj, "crop_y", 50) if obj else 50
     crop_scale = getattr(obj, "crop_scale", 100) if obj else 100
+    cropper_attr = "data-product-video-cropper" if media_kind == "video" else "data-product-cropper"
+    media_attr_name = "data-video-url" if media_kind == "video" else "data-image-url"
+    media_markup = (
+        '<video class="product-cropper__video" muted playsinline preload="metadata"></video>'
+        if media_kind == "video"
+        else '<img class="product-cropper__image" alt="Предпросмотр изображения">'
+    )
 
     return format_html(
         (
-            '<div class="product-cropper" data-product-cropper '
-            'data-image-url="{}" data-crop-x="{}" data-crop-y="{}" data-crop-scale="{}">'
+            '<div class="product-cropper" {} data-cropper-kind="{}" {}="{}" '
+            'data-crop-x="{}" data-crop-y="{}" data-crop-scale="{}">'
             '<div class="product-cropper__empty">{}</div>'
             '<div class="product-cropper__workspace" hidden>'
             '<div class="product-cropper__stage">'
             '<div class="product-cropper__image-shell">'
-            '<img class="product-cropper__image" alt="Предпросмотр изображения">'
+            "{}"
             '<div class="product-cropper__frame"></div>'
             '<button type="button" class="product-cropper__handle product-cropper__handle--n" data-resize-dir="n"></button>'
             '<button type="button" class="product-cropper__handle product-cropper__handle--e" data-resize-dir="e"></button>'
@@ -41,11 +55,15 @@ def render_crop_preview(obj, empty_text):
             "</div>"
             "</div>"
         ),
-        image_url,
+        mark_safe(cropper_attr),
+        media_kind,
+        mark_safe(media_attr_name),
+        media_url,
         crop_x,
         crop_y,
         crop_scale,
         empty_text,
+        mark_safe(media_markup),
     )
 
 
@@ -96,19 +114,28 @@ class ProductImageInline(CropperMediaMixin, admin.StackedInline):
         )
 
 
-class ProductVideoInline(admin.StackedInline):
+class ProductVideoInline(CropperMediaMixin, admin.StackedInline):
     model = ProductVideo
     form = ProductVideoAdminForm
-    extra = 1
+    extra = 0
     ordering = ("sort_order", "id")
+    readonly_fields = ("crop_preview",)
     fieldsets = (
         (
             "Видео товара",
             {
-                "fields": ("title", "video", "is_muted", "sort_order"),
+                "fields": ("title", "video", "crop_x", "crop_y", "crop_scale", "crop_preview", "is_muted", "sort_order"),
             },
         ),
     )
+
+    @admin.display(description="Визуальная обрезка видео товара")
+    def crop_preview(self, obj):
+        return render_crop_preview(
+            obj,
+            "Загрузи видео товара и перетаскивай рамку мышкой, чтобы выбрать кадр для карточки.",
+            media_kind="video",
+        )
 
 
 @admin.register(Category)
@@ -172,13 +199,26 @@ class ProductImageAdmin(CropperMediaMixin, admin.ModelAdmin):
 
 
 @admin.register(ProductVideo)
-class ProductVideoAdmin(admin.ModelAdmin):
+class ProductVideoAdmin(CropperMediaMixin, admin.ModelAdmin):
     form = ProductVideoAdminForm
     list_display = ("__str__", "product", "is_muted", "sort_order")
     list_editable = ("is_muted", "sort_order")
     list_filter = ("product__category", "is_muted")
     search_fields = ("title", "product__title")
     autocomplete_fields = ("product",)
+    readonly_fields = ("crop_preview",)
+    fieldsets = (
+        ("Основное", {"fields": ("product", "title", "is_muted", "sort_order")}),
+        ("Видео", {"fields": ("video", "crop_x", "crop_y", "crop_scale", "crop_preview")}),
+    )
+
+    @admin.display(description="Визуальная обрезка видео товара")
+    def crop_preview(self, obj):
+        return render_crop_preview(
+            obj,
+            "Загрузи видео товара и перетаскивай рамку мышкой, чтобы выбрать кадр для карточки.",
+            media_kind="video",
+        )
 
 
 admin.site.site_header = "Шары и Точка"

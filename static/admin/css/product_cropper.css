@@ -67,7 +67,8 @@
     border-radius: 16px;
 }
 
-.product-cropper__image {
+.product-cropper__image,
+.product-cropper__video {
     display: block;
     width: 100%;
     height: 100%;

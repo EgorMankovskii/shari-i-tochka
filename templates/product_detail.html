@@ -80,6 +80,9 @@
                             data-media-type="video"
                             data-video-src="{{ video.video_url }}"
                             data-video-muted="{{ video.is_muted|yesno:'true,false' }}"
+                            data-crop-x="{{ video.crop_x }}"
+                            data-crop-y="{{ video.crop_y }}"
+                            data-crop-scale="{{ video.crop_scale }}"
                             data-image-alt="{{ video.title|default:product.title }}"
                             data-image-title="{{ video.title|default:product.title }}"
                         >
@@ -89,6 +92,9 @@
                                 {% if video.is_muted %}muted{% endif %}
                                 playsinline
                                 preload="metadata"
+                                data-crop-x="{{ video.crop_x }}"
+                                data-crop-y="{{ video.crop_y }}"
+                                data-crop-scale="{{ video.crop_scale }}"
                             ></video>
                         </button>
                     {% endfor %}

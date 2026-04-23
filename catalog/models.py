@@ -179,6 +179,9 @@ class ProductVideo(models.Model):
     )
     title = models.CharField("Название видео", max_length=140, blank=True)
     video = models.FileField("Видео", upload_to="products/videos/")
+    crop_x = models.PositiveSmallIntegerField("Кадрирование X", default=50)
+    crop_y = models.PositiveSmallIntegerField("Кадрирование Y", default=50)
+    crop_scale = models.PositiveSmallIntegerField("Масштаб кадра", default=100)
     is_muted = models.BooleanField("Отключить звук", default=True)
     sort_order = models.PositiveIntegerField("Порядок", default=0)
 
@@ -195,3 +198,11 @@ class ProductVideo(models.Model):
         if self.video:
             return self.video.url
         return ""
+
+    @property
+    def object_position(self):
+        return f"{self.crop_x}% {self.crop_y}%"
+
+    @property
+    def crop_scale_factor(self):
+        return max(self.crop_scale, 20) / 100

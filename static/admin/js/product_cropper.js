@@ -20,18 +20,18 @@
         scope.querySelector(`[name$="-${fieldName}"]`)
     );
 
-    const findImageInput = (scope) => (
-        scope.querySelector('input[type="file"][name="image"]') ||
-        scope.querySelector('input[type="file"][id="id_image"]') ||
-        scope.querySelector('input[type="file"][name$="-image"]') ||
-        scope.querySelector('input[type="file"][id$="-image"]') ||
+    const findMediaInput = (scope, fieldName) => (
+        scope.querySelector(`input[type="file"][name="${fieldName}"]`) ||
+        scope.querySelector(`input[type="file"][id="id_${fieldName}"]`) ||
+        scope.querySelector(`input[type="file"][name$="-${fieldName}"]`) ||
+        scope.querySelector(`input[type="file"][id$="-${fieldName}"]`) ||
         scope.querySelector('input[type="file"]')
     );
 
-    const findClearInput = (scope) => (
-        scope.querySelector('input[type="checkbox"][name="image-clear"]') ||
-        scope.querySelector('input[type="checkbox"][id="id_image-clear"]') ||
-        scope.querySelector('input[type="checkbox"][name$="-image-clear"]')
+    const findClearInput = (scope, fieldName) => (
+        scope.querySelector(`input[type="checkbox"][name="${fieldName}-clear"]`) ||
+        scope.querySelector(`input[type="checkbox"][id="id_${fieldName}-clear"]`) ||
+        scope.querySelector(`input[type="checkbox"][name$="-${fieldName}-clear"]`)
     );
 
     const initCropper = (root) => {
@@ -45,23 +45,27 @@
         const stage = root.querySelector(".product-cropper__stage");
         const shell = root.querySelector(".product-cropper__image-shell");
         const image = root.querySelector(".product-cropper__image");
+        const video = root.querySelector(".product-cropper__video");
+        const media = image || video;
+        const mediaKind = root.dataset.cropperKind || (video ? "video" : "image");
+        const fieldName = mediaKind === "video" ? "video" : "image";
         const frame = root.querySelector(".product-cropper__frame");
         const previewCanvas = root.querySelector(".product-cropper__preview-canvas");
         const handles = Array.from(root.querySelectorAll("[data-resize-dir]"));
         const cropXInput = findField(scope, "crop_x");
         const cropYInput = findField(scope, "crop_y");
         const cropScaleInput = findField(scope, "crop_scale");
-        const imageInput = findImageInput(scope);
-        const clearInput = findClearInput(scope);
+        const imageInput = findMediaInput(scope, fieldName);
+        const clearInput = findClearInput(scope, fieldName);
 
-        if (!workspace || !empty || !stage || !shell || !image || !frame || !previewCanvas || !cropXInput || !cropYInput || !cropScaleInput) {
+        if (!workspace || !empty || !stage || !shell || !media || !frame || !previewCanvas || !cropXInput || !cropYInput || !cropScaleInput) {
             return;
         }
 
         root.dataset.cropperReady = "true";
 
         const previewContext = previewCanvas.getContext("2d");
-        const persistedSrc = root.dataset.imageUrl || "";
+        const persistedSrc = root.dataset.imageUrl || root.dataset.videoUrl || "";
         let temporaryUrl = "";
         let currentSrc = "";
         let shellWidth = 0;
@@ -125,14 +129,30 @@
             cropScaleInput.value = clamp(scale, 20, 500);
         };
 
+        const getMediaNaturalSize = () => {
+            if (mediaKind === "video") {
+                return {
+                    width: video?.videoWidth || 0,
+                    height: video?.videoHeight || 0,
+                };
+            }
+
+            return {
+                width: image?.naturalWidth || 0,
+                height: image?.naturalHeight || 0,
+            };
+        };
+
         const drawPreview = () => {
-            if (!previewContext || !image.naturalWidth || !image.naturalHeight || !shellWidth || !shellHeight) {
+            const { width: naturalWidth, height: naturalHeight } = getMediaNaturalSize();
+
+            if (!previewContext || !naturalWidth || !naturalHeight || !shellWidth || !shellHeight) {
                 clearPreview();
                 return;
             }
 
-            const scaleX = image.naturalWidth / shellWidth;
-            const scaleY = image.naturalHeight / shellHeight;
+            const scaleX = naturalWidth / shellWidth;
+            const scaleY = naturalHeight / shellHeight;
             const sourceX = box.x * scaleX;
             const sourceY = box.y * scaleY;
             const sourceWidth = box.width * scaleX;
@@ -140,7 +160,7 @@
 
             clearPreview();
             previewContext.drawImage(
-                image,
+                media,
                 sourceX,
                 sourceY,
                 sourceWidth,
@@ -199,17 +219,19 @@
         };
 
         const updateShellSize = () => {
-            if (!image.naturalWidth || !image.naturalHeight) {
+            const { width: naturalWidth, height: naturalHeight } = getMediaNaturalSize();
+
+            if (!naturalWidth || !naturalHeight) {
                 return;
             }
 
             const availableWidth = Math.min(stage.clientWidth || MAX_STAGE_WIDTH, MAX_STAGE_WIDTH);
-            const widthRatio = availableWidth / image.naturalWidth;
-            const heightRatio = MAX_STAGE_HEIGHT / image.naturalHeight;
+            const widthRatio = availableWidth / naturalWidth;
+            const heightRatio = MAX_STAGE_HEIGHT / naturalHeight;
             const scale = Math.min(widthRatio, heightRatio, 1);
 
-            shellWidth = Math.max(Math.round(image.naturalWidth * scale), 1);
-            shellHeight = Math.max(Math.round(image.naturalHeight * scale), 1);
+            shellWidth = Math.max(Math.round(naturalWidth * scale), 1);
+            shellHeight = Math.max(Math.round(naturalHeight * scale), 1);
 
             shell.style.width = `${shellWidth}px`;
             shell.style.height = `${shellHeight}px`;
@@ -222,7 +244,9 @@
 
             resizeFrame = requestAnimationFrame(() => {
                 resizeFrame = 0;
-                if (!currentSrc || !image.complete) {
+                const { width: naturalWidth, height: naturalHeight } = getMediaNaturalSize();
+
+                if (!currentSrc || !naturalWidth || !naturalHeight) {
                     return;
                 }
 
@@ -233,7 +257,14 @@
 
         const showEmptyState = () => {
             currentSrc = "";
-            image.removeAttribute("src");
+            if (image) {
+                image.removeAttribute("src");
+            }
+            if (video) {
+                video.pause();
+                video.removeAttribute("src");
+                video.load();
+            }
             shell.removeAttribute("style");
             shellWidth = 0;
             shellHeight = 0;
@@ -241,7 +272,7 @@
             clearPreview();
         };
 
-        const showImage = (src) => {
+        const showMedia = (src) => {
             if (!src) {
                 showEmptyState();
                 return;
@@ -249,6 +280,22 @@
 
             currentSrc = src;
             setVisible(true);
+
+            if (mediaKind === "video" && video) {
+                video.onloadeddata = () => {
+                    updateShellSize();
+                    placeBoxFromInputs();
+                    video.pause();
+                };
+
+                video.onerror = () => {
+                    showEmptyState();
+                };
+
+                video.src = src;
+                video.load();
+                return;
+            }
 
             image.onload = () => {
                 updateShellSize();
@@ -272,7 +319,7 @@
                 return;
             }
 
-            showImage(persistedSrc);
+            showMedia(persistedSrc);
         };
 
         const showSelectedFile = (file) => {
@@ -284,7 +331,7 @@
             }
 
             temporaryUrl = URL.createObjectURL(file);
-            showImage(temporaryUrl);
+            showMedia(temporaryUrl);
         };
 
         const resizeBox = (deltaX, deltaY) => {
@@ -427,14 +474,14 @@
         });
 
         if (persistedSrc) {
-            showImage(persistedSrc);
+            showMedia(persistedSrc);
         } else {
             showEmptyState();
         }
     };
 
     const initAllCroppers = () => {
-        document.querySelectorAll("[data-product-cropper]").forEach(initCropper);
+        document.querySelectorAll("[data-product-cropper], [data-product-video-cropper]").forEach(initCropper);
     };
 
     window.addEventListener("load", initAllCroppers);

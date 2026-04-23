@@ -29,7 +29,7 @@ class ProductImageAdminForm(CropFieldsMixin, forms.ModelForm):
         fields = "__all__"
 
 
-class ProductVideoAdminForm(forms.ModelForm):
+class ProductVideoAdminForm(CropFieldsMixin, forms.ModelForm):
     class Meta:
         model = ProductVideo
         fields = "__all__"
@@ -137,7 +137,7 @@ class ProductImageStudioForm(StudioBaseFormMixin, CropFieldsMixin, forms.ModelFo
         return cleaned_data
 
 
-class ProductVideoStudioForm(StudioBaseFormMixin, forms.ModelForm):
+class ProductVideoStudioForm(StudioBaseFormMixin, CropFieldsMixin, forms.ModelForm):
     class Meta:
         model = ProductVideo
         fields = "__all__"
@@ -145,6 +145,38 @@ class ProductVideoStudioForm(StudioBaseFormMixin, forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.apply_studio_widgets()
+
+    def _has_media_payload(self):
+        uploaded = self.files.get(self.add_prefix("video"))
+        existing_video = bool(getattr(self.instance, "video", None))
+        return bool(uploaded or existing_video)
+
+    def has_changed(self):
+        changed = super().has_changed()
+        if not changed:
+            return False
+
+        if self.instance.pk:
+            return True
+
+        return self._has_media_payload()
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if cleaned_data.get("DELETE"):
+            return cleaned_data
+
+        title = (cleaned_data.get("title") or "").strip()
+        uploaded = cleaned_data.get("video")
+        sort_order = cleaned_data.get("sort_order")
+        has_media = bool(uploaded or getattr(self.instance, "video", None))
+        has_other_content = bool(title or sort_order)
+
+        if has_other_content and not has_media:
+            raise forms.ValidationError("Для видео товара нужно загрузить видеофайл.")
+
+        return cleaned_data
 
 
 UserModel = get_user_model()
@@ -234,5 +266,5 @@ ProductVideoStudioFormSet = inlineformset_factory(
     form=ProductVideoStudioForm,
     extra=0,
     can_delete=True,
-    fields=("title", "video", "is_muted", "sort_order"),
+    fields=("title", "video", "crop_x", "crop_y", "crop_scale", "is_muted", "sort_order"),
 )
