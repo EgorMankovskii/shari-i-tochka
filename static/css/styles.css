@@ -1132,6 +1132,10 @@ body.modal-open {
     .modal__actions--messengers {
         grid-template-columns: 1fr;
     }
+
+    .footer__socials {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 560px) {
@@ -1165,5 +1169,34 @@ body.modal-open {
     .product-card__bottom {
         flex-direction: row;
         align-items: center;
+    }
+
+    .footer__social-copy {
+        max-width: 100%;
+    }
+
+    .footer__socials {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .footer-social {
+        min-height: 72px;
+        padding: 11px 12px;
+        gap: 9px;
+    }
+
+    .footer-social__icon {
+        width: 42px;
+        height: 42px;
+        padding: 7px;
+    }
+
+    .footer-social__title {
+        font-size: 14px;
+    }
+
+    .footer-social__hint {
+        font-size: 11px;
     }
 }
