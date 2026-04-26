@@ -3,9 +3,8 @@
 {% block title %}{{ product.title }} | Шары и Точка{% endblock %}
 
 {% block content %}
-<section class="page-hero page-hero--fit js-fit-hero">
-    <div class="page-hero__fit-stage">
-        <div class="container product-layout page-hero__fit-target js-fit-hero-target">
+<section class="page-hero page-hero--product">
+    <div class="container product-layout">
             <div class="product-gallery js-product-gallery">
                 <button type="button" class="product-gallery__main js-gallery-open" data-gallery-index="0">
                     <img
@@ -108,20 +107,26 @@
                     <span class="pill">{{ product.tag }}</span>
                 {% endif %}
                 <p class="product-summary__price">{{ product.price }}</p>
-                {% if product.description %}
-                    <p class="lead">{{ product.description }}</p>
-                {% else %}
+                {% if product_description %}
+                    <p class="lead">{{ product_description|linebreaksbr }}</p>
+                {% endif %}
+                {% comment %}
                     <p class="lead">
                         Страница товара показывает основную карточку, дополнительные изображения и полное описание.
                         Все это теперь можно редактировать в админке.
                     </p>
+                {% endcomment %}
+                {% if product.composition %}
+                    <div class="product-summary__composition">
+                        <span class="product-summary__composition-label">Состав</span>
+                        <p>{{ product.composition|linebreaksbr }}</p>
+                    </div>
                 {% endif %}
                 <div class="hero__actions">
                     <button class="button js-open-contact-modal" type="button">Связаться по товару</button>
                     <a href="{{ product.category.get_absolute_url }}" class="button button--ghost">Назад в раздел</a>
                 </div>
             </div>
-        </div>
     </div>
 </section>
 

@@ -60,8 +60,10 @@ def product_detail(request, pk):
         is_active=True,
         category__is_visible=True,
     )
+    product_description = product.description or product.category.default_product_description
     context = shared_context() | {
         'product': product,
+        'product_description': product_description,
         'gallery_images': product.gallery_images.filter(GALLERY_IMAGE_FILTER),
         'gallery_videos': product.gallery_videos.all(),
         'related_products': product.category.products.prefetch_related(GALLERY_IMAGE_PREFETCH).filter(is_active=True).exclude(pk=product.pk)[:3],

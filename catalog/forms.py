@@ -49,7 +49,7 @@ class StudioBaseFormMixin:
             if isinstance(widget, forms.Textarea):
                 widget.attrs["class"] = f"{existing} {self.textarea_classes}".strip()
                 widget.attrs.setdefault("rows", 4)
-                if name == "description":
+                if name in {"description", "composition", "default_product_description"}:
                     widget.attrs["class"] = f"{widget.attrs['class']} studio-field__input--description".strip()
                     widget.attrs["rows"] = 3
             elif isinstance(widget, forms.CheckboxInput):

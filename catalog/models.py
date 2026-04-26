@@ -7,6 +7,11 @@ class Category(models.Model):
     title = models.CharField("Название", max_length=120)
     slug = models.SlugField("Slug", unique=True)
     home_description = models.TextField("Описание для главной", blank=True)
+    default_product_description = models.TextField(
+        "Описание товара по умолчанию",
+        blank=True,
+        help_text="Показывается на странице товара, если у конкретной карточки описание не заполнено.",
+    )
     page_title = models.CharField("Заголовок страницы", max_length=180, blank=True)
     page_lead = models.TextField("Подзаголовок страницы", blank=True)
     accent = models.CharField("Акцентная строка", max_length=180, blank=True)
@@ -72,6 +77,7 @@ class Product(models.Model):
     )
     title = models.CharField("Название", max_length=180)
     description = models.TextField("Описание", blank=True)
+    composition = models.TextField("Состав", blank=True)
     price = models.CharField("Цена", max_length=80)
     tag = models.CharField("Метка", max_length=80, blank=True)
     static_image = models.CharField(

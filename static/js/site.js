@@ -1,3 +1,48 @@
+const sitePreloader = document.querySelector(".site-preloader");
+
+if (sitePreloader) {
+    const preloaderStartedAt = window.performance?.now?.() || Date.now();
+    const minimumPreloaderTime = 550;
+    let preloaderHidden = false;
+
+    const hideSitePreloader = () => {
+        if (preloaderHidden) {
+            return;
+        }
+
+        preloaderHidden = true;
+
+        const now = window.performance?.now?.() || Date.now();
+        const delay = Math.max(minimumPreloaderTime - (now - preloaderStartedAt), 0);
+
+        window.setTimeout(() => {
+            sitePreloader.classList.add("is-hidden");
+            window.setTimeout(() => {
+                sitePreloader.remove();
+            }, 420);
+        }, delay);
+    };
+
+    if (document.readyState === "complete") {
+        hideSitePreloader();
+    } else {
+        window.addEventListener("load", hideSitePreloader, { once: true });
+        window.setTimeout(hideSitePreloader, 1200);
+    }
+}
+
+document.addEventListener("contextmenu", (event) => {
+    if (event.target.closest("img, video, picture")) {
+        event.preventDefault();
+    }
+});
+
+document.addEventListener("dragstart", (event) => {
+    if (event.target.closest("img, video, picture")) {
+        event.preventDefault();
+    }
+});
+
 const modal = document.querySelector("#contact-modal");
 
 if (modal) {
@@ -162,6 +207,12 @@ const applyAllSavedCrops = () => {
 };
 
 if (productCards.length) {
+    const mobileProductCardQuery = window.matchMedia("(max-width: 560px)");
+    const cardSlideshows = [];
+    const cardSlideshowByElement = new Map();
+
+    const isMobileProductSlideshow = () => mobileProductCardQuery.matches;
+
     productCards.forEach((card) => {
         const image = card.querySelector(".js-product-card-image");
         const slides = Array.from(card.querySelectorAll(".product-card__slides [data-slide-src]"))
@@ -235,8 +286,8 @@ if (productCards.length) {
 
             hoverDelay = window.setTimeout(() => {
                 stepSlide();
-                hoverInterval = window.setInterval(stepSlide, 2200);
-            }, 900);
+                hoverInterval = window.setInterval(stepSlide, 3200);
+            }, 1200);
         };
 
         const stopSlideshow = () => {
@@ -244,9 +295,110 @@ if (productCards.length) {
             renderSlide(0, true);
         };
 
-        card.addEventListener("mouseenter", startSlideshow);
-        card.addEventListener("mouseleave", stopSlideshow);
+        const controller = {
+            card,
+            start: startSlideshow,
+            stop: stopSlideshow,
+        };
+
+        cardSlideshows.push(controller);
+        cardSlideshowByElement.set(card, controller);
+
+        card.addEventListener("mouseenter", () => {
+            if (!isMobileProductSlideshow()) {
+                startSlideshow();
+            }
+        });
+
+        card.addEventListener("mouseleave", () => {
+            if (!isMobileProductSlideshow()) {
+                stopSlideshow();
+            }
+        });
     });
+
+    if (cardSlideshows.length && "IntersectionObserver" in window) {
+        const visibleMobileCards = new Map();
+        let activeMobileCard = null;
+
+        const stopActiveMobileCard = () => {
+            if (!activeMobileCard) {
+                return;
+            }
+
+            activeMobileCard.stop();
+            activeMobileCard = null;
+        };
+
+        const syncMobileCardSlideshow = () => {
+            if (!isMobileProductSlideshow()) {
+                visibleMobileCards.clear();
+                stopActiveMobileCard();
+                return;
+            }
+
+            let nextCard = null;
+            let nextRatio = 0;
+
+            visibleMobileCards.forEach((entry, controller) => {
+                if (entry.intersectionRatio > nextRatio) {
+                    nextRatio = entry.intersectionRatio;
+                    nextCard = controller;
+                }
+            });
+
+            if (!nextCard || nextRatio < 0.45) {
+                stopActiveMobileCard();
+                return;
+            }
+
+            if (activeMobileCard === nextCard) {
+                return;
+            }
+
+            stopActiveMobileCard();
+            activeMobileCard = nextCard;
+            activeMobileCard.start();
+        };
+
+        const mobileCardObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                const controller = cardSlideshowByElement.get(entry.target);
+
+                if (!controller) {
+                    return;
+                }
+
+                if (entry.isIntersecting) {
+                    visibleMobileCards.set(controller, entry);
+                } else {
+                    visibleMobileCards.delete(controller);
+
+                    if (activeMobileCard === controller) {
+                        stopActiveMobileCard();
+                    }
+                }
+            });
+
+            syncMobileCardSlideshow();
+        }, {
+            rootMargin: "-12% 0px -18% 0px",
+            threshold: [0, 0.25, 0.45, 0.6, 0.75, 1],
+        });
+
+        cardSlideshows.forEach(({ card }) => {
+            mobileCardObserver.observe(card);
+        });
+
+        if (typeof mobileProductCardQuery.addEventListener === "function") {
+            mobileProductCardQuery.addEventListener("change", syncMobileCardSlideshow);
+        } else if (typeof mobileProductCardQuery.addListener === "function") {
+            mobileProductCardQuery.addListener(syncMobileCardSlideshow);
+        }
+
+        window.addEventListener("resize", syncMobileCardSlideshow);
+        window.addEventListener("orientationchange", syncMobileCardSlideshow);
+    }
 }
 
 if (fitHero) {

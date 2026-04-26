@@ -149,6 +149,7 @@ class CategoryAdmin(admin.ModelAdmin):
         ("Основное", {"fields": ("title", "slug", "is_visible", "sort_order")}),
         ("Карточка на главной", {"fields": ("home_description", "static_image", "image")}),
         ("Страница категории", {"fields": ("page_title", "page_lead", "accent", "filters_text")}),
+        ("Товары в категории", {"fields": ("default_product_description",)}),
     )
 
 
@@ -158,12 +159,12 @@ class ProductAdmin(CropperMediaMixin, admin.ModelAdmin):
     list_display = ("title", "category", "price", "tag", "is_featured", "is_active", "sort_order")
     list_filter = ("category", "is_featured", "is_active")
     list_editable = ("price", "tag", "is_featured", "is_active", "sort_order")
-    search_fields = ("title", "description")
+    search_fields = ("title", "description", "composition")
     autocomplete_fields = ("category",)
     inlines = [ProductImageInline, ProductVideoInline]
     readonly_fields = ("crop_preview",)
     fieldsets = (
-        ("Основное", {"fields": ("category", "title", "description", "price", "tag")}),
+        ("Основное", {"fields": ("category", "title", "description", "composition", "price", "tag")}),
         ("Изображение", {"fields": ("static_image", "image", "crop_x", "crop_y", "crop_scale", "crop_preview")}),
         ("Публикация", {"fields": ("is_featured", "is_active", "sort_order")}),
     )
