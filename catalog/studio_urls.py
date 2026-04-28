@@ -16,6 +16,7 @@ urlpatterns = [
     path("users/", studio_views.studio_user_list, name="studio_user_list"),
     path("users/new/", studio_views.studio_user_create, name="studio_user_create"),
     path("users/<int:pk>/", studio_views.studio_user_edit, name="studio_user_edit"),
+    path("users/<int:pk>/delete/", studio_views.studio_user_delete, name="studio_user_delete"),
     path("groups/", studio_views.studio_group_list, name="studio_group_list"),
     path("groups/new/", studio_views.studio_group_create, name="studio_group_create"),
     path("groups/<int:pk>/", studio_views.studio_group_edit, name="studio_group_edit"),

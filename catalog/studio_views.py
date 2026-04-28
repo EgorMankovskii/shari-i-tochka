@@ -408,6 +408,28 @@ def studio_user_edit(request, pk):
     return _studio_user_form(request, user_obj)
 
 
+@superuser_studio_required
+def studio_user_delete(request, pk):
+    if request.method != "POST":
+        return redirect("studio_user_list")
+
+    user_obj = get_object_or_404(UserModel, pk=pk)
+    next_url = request.POST.get("next") or reverse("studio_user_list")
+
+    if user_obj.pk == request.user.pk:
+        messages.error(request, "Нельзя удалить пользователя, под которым ты сейчас вошёл.")
+        return redirect(next_url)
+
+    if user_obj.is_superuser and UserModel.objects.filter(is_superuser=True, is_active=True).count() <= 1:
+        messages.error(request, "Нельзя удалить последнего активного суперпользователя.")
+        return redirect(next_url)
+
+    username = user_obj.username
+    user_obj.delete()
+    messages.success(request, f"Пользователь «{username}» удалён.")
+    return redirect(next_url)
+
+
 def _studio_user_form(request, user_obj=None):
     is_create = user_obj is None
     next_url = request.POST.get("next") or request.GET.get("next") or ""
@@ -427,6 +449,8 @@ def _studio_user_form(request, user_obj=None):
         "form": form,
         "next_url": next_url,
         "is_create": is_create,
+        "user_obj": user_obj,
+        "can_delete": bool(user_obj and user_obj.pk != request.user.pk),
         "entity_name": "пользователя",
         "back_url_name": "studio_user_list",
     }

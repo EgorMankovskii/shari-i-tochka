@@ -65,7 +65,22 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <a href="{% url 'studio_user_edit' user_obj.pk %}?next={{ request.get_full_path|urlencode }}" class="studio-button studio-button--small">Редактировать</a>
+                                <div class="studio-table-actions">
+                                    <a href="{% url 'studio_user_edit' user_obj.pk %}?next={{ request.get_full_path|urlencode }}" class="studio-button studio-button--small">Редактировать</a>
+                                    {% if user_obj.pk != request.user.pk %}
+                                        <form method="post" action="{% url 'studio_user_delete' user_obj.pk %}" class="studio-inline-form">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                            <button
+                                                type="submit"
+                                                class="studio-button studio-button--small studio-button--danger"
+                                                onclick="return confirm('Удалить пользователя «{{ user_obj.username|escapejs }}»? Это действие нельзя отменить.');"
+                                            >
+                                                Удалить
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
                     {% empty %}

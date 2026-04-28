@@ -16,6 +16,16 @@
             <button type="submit" name="save" class="studio-button studio-button--accent">Сохранить</button>
             <button type="submit" name="save_continue" class="studio-button">Сохранить и продолжить</button>
             <a href="{% if next_url %}{{ next_url }}{% else %}{% url back_url_name %}{% endif %}" class="studio-button studio-button--ghost">Назад к списку</a>
+            {% if can_delete %}
+                <button
+                    type="submit"
+                    form="studio-user-delete-form"
+                    class="studio-button studio-button--danger"
+                    onclick="return confirm('Удалить пользователя «{{ user_obj.username|escapejs }}»? Это действие нельзя отменить.');"
+                >
+                    Удалить пользователя
+                </button>
+            {% endif %}
         </div>
 
         <section class="studio-form__section">
@@ -40,6 +50,22 @@
             <button type="submit" name="save" class="studio-button studio-button--accent">Сохранить</button>
             <button type="submit" name="save_continue" class="studio-button">Сохранить и продолжить</button>
             <a href="{% if next_url %}{{ next_url }}{% else %}{% url back_url_name %}{% endif %}" class="studio-button studio-button--ghost">Назад к списку</a>
+            {% if can_delete %}
+                <button
+                    type="submit"
+                    form="studio-user-delete-form"
+                    class="studio-button studio-button--danger"
+                    onclick="return confirm('Удалить пользователя «{{ user_obj.username|escapejs }}»? Это действие нельзя отменить.');"
+                >
+                    Удалить пользователя
+                </button>
+            {% endif %}
         </div>
     </form>
+    {% if can_delete %}
+        <form id="studio-user-delete-form" method="post" action="{% url 'studio_user_delete' user_obj.pk %}" class="studio-delete-form">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% if next_url %}{{ next_url }}{% else %}{% url back_url_name %}{% endif %}">
+        </form>
+    {% endif %}
 {% endblock %}

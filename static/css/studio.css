@@ -279,6 +279,24 @@ body::-webkit-scrollbar-thumb,
     color: #000;
 }
 
+.studio-button--danger {
+    background: #c8323f;
+    color: #fff;
+    border-color: rgba(255, 180, 173, 0.34);
+    box-shadow: 0 12px 22px rgba(200, 50, 63, 0.18);
+}
+
+.studio-button--danger:link,
+.studio-button--danger:visited {
+    color: #fff;
+}
+
+.studio-button--danger:hover,
+.studio-button--danger:focus {
+    background: #e54855;
+    color: #fff;
+}
+
 .studio-alerts {
     display: grid;
     gap: 12px;
@@ -593,6 +611,21 @@ body::-webkit-scrollbar-thumb,
 .studio-table a:hover,
 .studio-table a:focus {
     color: var(--studio-accent);
+}
+
+.studio-table-actions {
+    display: grid;
+    gap: 10px;
+    justify-items: start;
+    align-items: start;
+}
+
+.studio-table-actions .studio-button {
+    min-width: 150px;
+}
+
+.studio-table-actions .studio-inline-form {
+    margin: 0;
 }
 
 .studio-thumb {

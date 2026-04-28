@@ -512,6 +512,8 @@ if (galleryRoot && lightbox) {
     const mainImage = galleryRoot.querySelector(".js-product-gallery-main-image");
     const mainVideo = galleryRoot.querySelector(".js-product-gallery-main-video");
     const mainOpenButton = galleryRoot.querySelector(".js-gallery-open");
+    const mainPrevButton = galleryRoot.querySelector(".js-gallery-main-prev");
+    const mainNextButton = galleryRoot.querySelector(".js-gallery-main-next");
     const thumbs = Array.from(galleryRoot.querySelectorAll(".js-gallery-thumb"));
     const extraOpenButtons = Array.from(document.querySelectorAll(".product-extra-card .js-gallery-open"));
     const closeButtons = lightbox.querySelectorAll(".js-close-lightbox");
@@ -561,7 +563,15 @@ if (galleryRoot && lightbox) {
         thumbs.forEach((thumb) => {
             thumb.classList.toggle("product-gallery__thumb--active", Number(thumb.dataset.galleryIndex) === index);
         });
+
+        const activeThumb = thumbs.find((thumb) => Number(thumb.dataset.galleryIndex) === index);
+        activeThumb?.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "nearest",
+        });
     };
+
 
     const showMedia = (index) => {
         const item = items[index];
@@ -735,6 +745,16 @@ if (galleryRoot && lightbox) {
 
     prevButton?.addEventListener("click", () => stepGallery(-1));
     nextButton?.addEventListener("click", () => stepGallery(1));
+    mainPrevButton?.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        stepGallery(-1);
+    });
+    mainNextButton?.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        stepGallery(1);
+    });
 
     bindSwipe(mainOpenButton, () => stepGallery(1), () => stepGallery(-1));
     bindSwipe(lightbox.querySelector(".lightbox__figure"), () => stepGallery(1), () => stepGallery(-1));

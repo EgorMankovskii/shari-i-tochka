@@ -22,81 +22,83 @@
                         preload="metadata"
                         hidden
                     ></video>
+                    <span class="product-gallery__main-arrow product-gallery__main-arrow--prev js-gallery-main-prev" aria-hidden="true">‹</span>
+                    <span class="product-gallery__main-arrow product-gallery__main-arrow--next js-gallery-main-next" aria-hidden="true">›</span>
                 </button>
 
                 <div class="product-gallery__thumbs">
-                    <button
-                        type="button"
-                        class="product-gallery__thumb product-gallery__thumb--active js-gallery-thumb"
-                        data-gallery-index="0"
-                        data-media-type="image"
-                        data-image-src="{{ product.display_image_url }}"
-                        data-crop-x="{{ product.crop_x }}"
-                        data-crop-y="{{ product.crop_y }}"
-                        data-crop-scale="{{ product.crop_scale }}"
-                        data-image-alt="{{ product.title }}"
-                        data-image-title="{{ product.title }}"
-                    >
-                        <span class="product-gallery__thumb-media">
-                            <img
-                                src="{{ product.display_image_url }}"
-                                alt="{{ product.title }}"
-                                data-crop-x="{{ product.crop_x }}"
-                                data-crop-y="{{ product.crop_y }}"
-                                data-crop-scale="{{ product.crop_scale }}"
-                            >
-                        </span>
-                    </button>
-                    {% for image in gallery_images %}
                         <button
                             type="button"
-                            class="product-gallery__thumb js-gallery-thumb"
-                            data-gallery-index="{{ forloop.counter }}"
+                            class="product-gallery__thumb product-gallery__thumb--active js-gallery-thumb"
+                            data-gallery-index="0"
                             data-media-type="image"
-                            data-image-src="{{ image.display_image_url }}"
-                            data-crop-x="{{ image.crop_x }}"
-                            data-crop-y="{{ image.crop_y }}"
-                            data-crop-scale="{{ image.crop_scale }}"
-                            data-image-alt="{{ image.title|default:product.title }}"
-                            data-image-title="{{ image.title|default:product.title }}"
+                            data-image-src="{{ product.display_image_url }}"
+                            data-crop-x="{{ product.crop_x }}"
+                            data-crop-y="{{ product.crop_y }}"
+                            data-crop-scale="{{ product.crop_scale }}"
+                            data-image-alt="{{ product.title }}"
+                            data-image-title="{{ product.title }}"
                         >
                             <span class="product-gallery__thumb-media">
                                 <img
-                                    src="{{ image.display_image_url }}"
-                                    alt="{{ image.title|default:product.title }}"
-                                    data-crop-x="{{ image.crop_x }}"
-                                    data-crop-y="{{ image.crop_y }}"
-                                    data-crop-scale="{{ image.crop_scale }}"
+                                    src="{{ product.display_image_url }}"
+                                    alt="{{ product.title }}"
+                                    data-crop-x="{{ product.crop_x }}"
+                                    data-crop-y="{{ product.crop_y }}"
+                                    data-crop-scale="{{ product.crop_scale }}"
                                 >
                             </span>
                         </button>
-                    {% endfor %}
-                    {% for video in gallery_videos %}
-                        <button
-                            type="button"
-                            class="product-gallery__thumb product-gallery__thumb--video js-gallery-thumb"
-                            data-gallery-index="{{ gallery_images|length|add:forloop.counter }}"
-                            data-media-type="video"
-                            data-video-src="{{ video.video_url }}"
-                            data-video-muted="{{ video.is_muted|yesno:'true,false' }}"
-                            data-crop-x="{{ video.crop_x }}"
-                            data-crop-y="{{ video.crop_y }}"
-                            data-crop-scale="{{ video.crop_scale }}"
-                            data-image-alt="{{ video.title|default:product.title }}"
-                            data-image-title="{{ video.title|default:product.title }}"
-                        >
-                            <span class="product-gallery__video-thumb-mark">Видео</span>
-                            <video
-                                src="{{ video.video_url }}"
-                                {% if video.is_muted %}muted{% endif %}
-                                playsinline
-                                preload="metadata"
+                        {% for image in gallery_images %}
+                            <button
+                                type="button"
+                                class="product-gallery__thumb js-gallery-thumb"
+                                data-gallery-index="{{ forloop.counter }}"
+                                data-media-type="image"
+                                data-image-src="{{ image.display_image_url }}"
+                                data-crop-x="{{ image.crop_x }}"
+                                data-crop-y="{{ image.crop_y }}"
+                                data-crop-scale="{{ image.crop_scale }}"
+                                data-image-alt="{{ image.title|default:product.title }}"
+                                data-image-title="{{ image.title|default:product.title }}"
+                            >
+                                <span class="product-gallery__thumb-media">
+                                    <img
+                                        src="{{ image.display_image_url }}"
+                                        alt="{{ image.title|default:product.title }}"
+                                        data-crop-x="{{ image.crop_x }}"
+                                        data-crop-y="{{ image.crop_y }}"
+                                        data-crop-scale="{{ image.crop_scale }}"
+                                    >
+                                </span>
+                            </button>
+                        {% endfor %}
+                        {% for video in gallery_videos %}
+                            <button
+                                type="button"
+                                class="product-gallery__thumb product-gallery__thumb--video js-gallery-thumb"
+                                data-gallery-index="{{ gallery_images|length|add:forloop.counter }}"
+                                data-media-type="video"
+                                data-video-src="{{ video.video_url }}"
+                                data-video-muted="{{ video.is_muted|yesno:'true,false' }}"
                                 data-crop-x="{{ video.crop_x }}"
                                 data-crop-y="{{ video.crop_y }}"
                                 data-crop-scale="{{ video.crop_scale }}"
-                            ></video>
-                        </button>
-                    {% endfor %}
+                                data-image-alt="{{ video.title|default:product.title }}"
+                                data-image-title="{{ video.title|default:product.title }}"
+                            >
+                                <span class="product-gallery__video-thumb-mark">Видео</span>
+                                <video
+                                    src="{{ video.video_url }}"
+                                    {% if video.is_muted %}muted{% endif %}
+                                    playsinline
+                                    preload="metadata"
+                                    data-crop-x="{{ video.crop_x }}"
+                                    data-crop-y="{{ video.crop_y }}"
+                                    data-crop-scale="{{ video.crop_scale }}"
+                                ></video>
+                            </button>
+                        {% endfor %}
                 </div>
             </div>
 
