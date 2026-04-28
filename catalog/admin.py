@@ -72,13 +72,13 @@ class CropperMediaMixin:
         css = {
             "all": ("admin/css/product_cropper.css",),
         }
-        js = ("admin/js/product_cropper.js",)
+        js = ("admin/js/product_cropper.js", "admin/js/product_subcategory.js")
 
 
 class ProductInline(admin.TabularInline):
     model = Product
     extra = 0
-    fields = ("title", "price", "tag", "is_featured", "is_active", "sort_order")
+    fields = ("title", "price", "tag", "subcategory", "is_featured", "is_active", "sort_order")
     ordering = ("sort_order", "title")
 
 
@@ -148,7 +148,7 @@ class CategoryAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Основное", {"fields": ("title", "slug", "is_visible", "sort_order")}),
         ("Карточка на главной", {"fields": ("home_description", "static_image", "image")}),
-        ("Страница категории", {"fields": ("page_title", "page_lead", "accent", "filters_text")}),
+        ("Страница категории", {"fields": ("page_title", "page_lead", "accent", "subcategories_text")}),
         ("Товары в категории", {"fields": ("default_product_description",)}),
     )
 
@@ -156,15 +156,15 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(Product)
 class ProductAdmin(CropperMediaMixin, admin.ModelAdmin):
     form = ProductAdminForm
-    list_display = ("title", "category", "price", "tag", "is_featured", "is_active", "sort_order")
-    list_filter = ("category", "is_featured", "is_active")
+    list_display = ("title", "category", "subcategory", "price", "tag", "is_featured", "is_active", "sort_order")
+    list_filter = ("category", "subcategory", "is_featured", "is_active")
     list_editable = ("price", "tag", "is_featured", "is_active", "sort_order")
     search_fields = ("title", "description", "composition")
     autocomplete_fields = ("category",)
     inlines = [ProductImageInline, ProductVideoInline]
     readonly_fields = ("crop_preview",)
     fieldsets = (
-        ("Основное", {"fields": ("category", "title", "description", "composition", "price", "tag")}),
+        ("Основное", {"fields": ("category", "subcategory", "title", "description", "composition", "price", "tag")}),
         ("Изображение", {"fields": ("static_image", "image", "crop_x", "crop_y", "crop_scale", "crop_preview")}),
         ("Публикация", {"fields": ("is_featured", "is_active", "sort_order")}),
     )

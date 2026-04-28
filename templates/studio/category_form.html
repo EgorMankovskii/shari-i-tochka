@@ -22,7 +22,7 @@
             <h2 class="studio-form__section-title">Основное</h2>
             <div class="studio-form__grid">
                 {% for field in form %}
-                    {% if field.name == 'home_description' or field.name == 'default_product_description' or field.name == 'page_title' or field.name == 'page_lead' or field.name == 'accent' or field.name == 'filters_text' or field.name == 'static_image' or field.name == 'image' %}
+                    {% if field.name == 'home_description' or field.name == 'default_product_description' or field.name == 'page_title' or field.name == 'page_lead' or field.name == 'accent' or field.name == 'subcategories_text' or field.name == 'filters_text' or field.name == 'static_image' or field.name == 'image' %}
                     {% else %}
                         <div class="studio-field">
                             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -59,7 +59,7 @@
             <h2 class="studio-form__section-title">Страница категории</h2>
             <div class="studio-form__grid">
                 {% for field in form %}
-                    {% if field.name == 'page_title' or field.name == 'page_lead' or field.name == 'accent' or field.name == 'filters_text' or field.name == 'default_product_description' %}
+                    {% if field.name == 'page_title' or field.name == 'page_lead' or field.name == 'accent' or field.name == 'subcategories_text' or field.name == 'default_product_description' %}
                         <div class="studio-field">
                             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                             {{ field }}

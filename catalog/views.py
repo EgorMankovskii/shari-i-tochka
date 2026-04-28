@@ -46,9 +46,21 @@ def home(request):
 
 def category_page(request, slug):
     category = get_object_or_404(Category, slug=slug, is_visible=True)
+    subcategories = category.subcategories
+    selected_subcategory = request.GET.get('subcategory', '').strip()
+    has_subcategories = bool(subcategories)
+    is_valid_subcategory = selected_subcategory in subcategories
+    products = category.products.prefetch_related(GALLERY_IMAGE_PREFETCH).filter(is_active=True).order_by('sort_order', 'title')
+
+    if has_subcategories:
+        products = products.filter(subcategory=selected_subcategory) if is_valid_subcategory else products.none()
+
     context = shared_context() | {
         'category': category,
-        'products': category.products.prefetch_related(GALLERY_IMAGE_PREFETCH).filter(is_active=True).order_by('sort_order', 'title'),
+        'products': products,
+        'subcategories': subcategories,
+        'selected_subcategory': selected_subcategory if is_valid_subcategory else '',
+        'has_subcategories': has_subcategories,
     }
     return render(request, 'category.html', context)
 

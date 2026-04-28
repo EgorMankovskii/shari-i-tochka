@@ -27,48 +27,80 @@
 
 <section class="section">
     <div class="container">
-        <div class="filter-row">
-            {% for filter in category.filters %}
-                <button class="filter-chip{% if forloop.first %} filter-chip--active{% endif %}" type="button">{{ filter }}</button>
-            {% endfor %}
-        </div>
-        <div class="grid grid--4">
-            {% for product in products %}
-                <article class="product-card product-card--compact product-card--tall">
-                    <a href="{{ product.get_absolute_url }}" class="product-card__image-link">
-                        <img
-                            class="product-card__image js-product-card-image"
-                            src="{{ product.display_image_url }}"
-                            alt="{{ product.title }}"
-                            data-crop-x="{{ product.crop_x }}"
-                            data-crop-y="{{ product.crop_y }}"
-                            data-crop-scale="{{ product.crop_scale }}"
+        {% if has_subcategories %}
+            <div class="subcategory-picker js-subcategory-picker">
+                <button class="subcategory-picker__toggle" type="button" aria-expanded="false">
+                    <span>
+                        {% if selected_subcategory %}
+                            {{ selected_subcategory }}
+                        {% else %}
+                            Выберите подкатегорию
+                        {% endif %}
+                    </span>
+                    <span class="subcategory-picker__chevron" aria-hidden="true"></span>
+                </button>
+                <div class="subcategory-picker__menu" hidden>
+                    {% for subcategory in subcategories %}
+                        <a
+                            class="subcategory-picker__item{% if subcategory == selected_subcategory %} subcategory-picker__item--active{% endif %}"
+                            href="?subcategory={{ subcategory|urlencode }}"
                         >
-                    </a>
-                    <div class="product-card__slides" hidden>
-                        <span
-                            data-slide-src="{{ product.display_image_url }}"
-                            data-slide-crop-x="{{ product.crop_x }}"
-                            data-slide-crop-y="{{ product.crop_y }}"
-                            data-slide-crop-scale="{{ product.crop_scale }}"
-                        ></span>
-                        {% for image in product.gallery_images.all %}
+                            {{ subcategory }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        {% if not has_subcategories or selected_subcategory %}
+            <div class="grid grid--4 product-grid--revealed">
+                {% for product in products %}
+                    <article class="product-card product-card--compact product-card--tall">
+                        <a href="{{ product.get_absolute_url }}" class="product-card__image-link">
+                            <img
+                                class="product-card__image js-product-card-image"
+                                src="{{ product.display_image_url }}"
+                                alt="{{ product.title }}"
+                                data-crop-x="{{ product.crop_x }}"
+                                data-crop-y="{{ product.crop_y }}"
+                                data-crop-scale="{{ product.crop_scale }}"
+                            >
+                        </a>
+                        <div class="product-card__slides" hidden>
                             <span
-                                data-slide-src="{{ image.display_image_url }}"
-                                data-slide-crop-x="{{ image.crop_x }}"
-                                data-slide-crop-y="{{ image.crop_y }}"
-                                data-slide-crop-scale="{{ image.crop_scale }}"
+                                data-slide-src="{{ product.display_image_url }}"
+                                data-slide-crop-x="{{ product.crop_x }}"
+                                data-slide-crop-y="{{ product.crop_y }}"
+                                data-slide-crop-scale="{{ product.crop_scale }}"
                             ></span>
-                        {% endfor %}
+                            {% for image in product.gallery_images.all %}
+                                <span
+                                    data-slide-src="{{ image.display_image_url }}"
+                                    data-slide-crop-x="{{ image.crop_x }}"
+                                    data-slide-crop-y="{{ image.crop_y }}"
+                                    data-slide-crop-scale="{{ image.crop_scale }}"
+                                ></span>
+                            {% endfor %}
+                        </div>
+                        <h3><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h3>
+                        <div class="product-card__bottom">
+                            <span class="product-card__price">{{ product.price }}</span>
+                            <a href="{{ product.get_absolute_url }}" class="button button--small">Подробнее</a>
+                        </div>
+                    </article>
+                {% empty %}
+                    <div class="empty-state">
+                        <h2>В этой подкатегории пока нет карточек</h2>
+                        <p>Но скоро будут :)</p>
                     </div>
-                    <h3><a href="{{ product.get_absolute_url }}">{{ product.title }}</a></h3>
-                    <div class="product-card__bottom">
-                        <span class="product-card__price">{{ product.price }}</span>
-                        <a href="{{ product.get_absolute_url }}" class="button button--small">Подробнее</a>
-                    </div>
-                </article>
-            {% endfor %}
-        </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state empty-state--select">
+                <h2>Выберите подкатегорию</h2>
+                <p>После выбора здесь появятся только карточки нужного раздела.</p>
+            </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

@@ -146,6 +146,10 @@
     height: 100%;
 }
 
+.is-subcategory-disabled {
+    display: none !important;
+}
+
 @media (max-width: 900px) {
     .product-cropper__workspace {
         grid-template-columns: 1fr;

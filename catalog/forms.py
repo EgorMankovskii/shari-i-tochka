@@ -1,3 +1,5 @@
+import json
+
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -17,10 +19,87 @@ class CropFieldsMixin:
                 self.fields[field_name].widget = HiddenInput()
 
 
+def get_category_subcategory_map():
+    return {
+        str(category.pk): category.subcategories
+        for category in Category.objects.order_by("sort_order", "title")
+    }
+
+
+def get_selected_category(form):
+    raw_category = None
+
+    if form.is_bound:
+        raw_category = form.data.get(form.add_prefix("category"))
+
+    if not raw_category and getattr(form.instance, "category_id", None):
+        raw_category = str(form.instance.category_id)
+
+    return str(raw_category or "")
+
+
+def configure_product_subcategory_field(form):
+    field = form.fields.get("subcategory")
+    if not field:
+        return
+
+    subcategory_map = get_category_subcategory_map()
+    selected_category = get_selected_category(form)
+    options = subcategory_map.get(selected_category, [])
+    current_value = form.data.get(form.add_prefix("subcategory")) if form.is_bound else getattr(form.instance, "subcategory", "")
+
+    choices = [("", "Без подкатегории")]
+    choices.extend((item, item) for item in options)
+
+    if current_value and current_value not in options:
+        choices.append((current_value, current_value))
+
+    field.widget = forms.Select(
+        choices=choices,
+        attrs={
+            "data-subcategory-select": "true",
+            "data-subcategory-map": json.dumps(subcategory_map, ensure_ascii=False),
+        },
+    )
+    field.required = False
+
+    if not options:
+        field.help_text = "У выбранной категории пока нет подкатегорий."
+
+
+def clean_product_subcategory(form, cleaned_data):
+    category = cleaned_data.get("category")
+    subcategory = (cleaned_data.get("subcategory") or "").strip()
+
+    if not category:
+        cleaned_data["subcategory"] = ""
+        return cleaned_data
+
+    options = category.subcategories
+    if not options:
+        cleaned_data["subcategory"] = ""
+        return cleaned_data
+
+    if not subcategory:
+        raise forms.ValidationError("Выбери подкатегорию товара для выбранной категории.")
+
+    if subcategory not in options:
+        form.add_error("subcategory", "Такой подкатегории нет в выбранной категории.")
+
+    return cleaned_data
+
+
 class ProductAdminForm(CropFieldsMixin, forms.ModelForm):
     class Meta:
         model = Product
         fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        configure_product_subcategory_field(self)
+
+    def clean(self):
+        return clean_product_subcategory(self, super().clean())
 
 
 class ProductImageAdminForm(CropFieldsMixin, forms.ModelForm):
@@ -89,7 +168,11 @@ class ProductStudioForm(StudioBaseFormMixin, CropFieldsMixin, forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        configure_product_subcategory_field(self)
         self.apply_studio_widgets()
+
+    def clean(self):
+        return clean_product_subcategory(self, super().clean())
 
 
 class ProductImageStudioForm(StudioBaseFormMixin, CropFieldsMixin, forms.ModelForm):

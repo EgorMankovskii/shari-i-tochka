@@ -21,6 +21,12 @@ class Category(models.Model):
         blank=True,
         help_text="Например: Все, Монобукеты, Сборные букеты, Композиции",
     )
+    subcategories_text = models.CharField(
+        "Подкатегории через запятую",
+        max_length=500,
+        blank=True,
+        help_text="Например: День рождения, Выписка, Свадьба. Если поле пустое, товары показываются сразу.",
+    )
     static_image = models.CharField(
         "Путь к статичному изображению",
         max_length=255,
@@ -46,6 +52,13 @@ class Category(models.Model):
     def filters(self):
         items = [item.strip() for item in self.filters_text.split(",") if item.strip()]
         return items or ["Все"]
+
+    @property
+    def subcategories(self):
+        return [item.strip() for item in self.subcategories_text.split(",") if item.strip()]
+
+    def has_subcategories(self):
+        return bool(self.subcategories)
 
     @property
     def display_page_title(self):
@@ -80,6 +93,12 @@ class Product(models.Model):
     composition = models.TextField("Состав", blank=True)
     price = models.CharField("Цена", max_length=80)
     tag = models.CharField("Метка", max_length=80, blank=True)
+    subcategory = models.CharField(
+        "Подкатегория",
+        max_length=120,
+        blank=True,
+        help_text="Выбирается из списка подкатегорий выбранной категории, если они указаны.",
+    )
     static_image = models.CharField(
         "Путь к статичному изображению",
         max_length=255,

@@ -80,6 +80,7 @@ const galleryRoot = document.querySelector(".js-product-gallery");
 const lightbox = document.querySelector("#gallery-lightbox");
 const fitHero = document.querySelector(".js-fit-hero");
 const productCards = Array.from(document.querySelectorAll(".product-card"));
+const subcategoryPickers = document.querySelectorAll(".js-subcategory-picker");
 const CROP_CARD_RATIO = 4 / 5.5;
 const DEFAULT_FRAME_WIDTH_RATIO = 0.58;
 
@@ -205,6 +206,53 @@ const applyAllSavedCrops = () => {
         scheduleCropApply(media);
     });
 };
+
+subcategoryPickers.forEach((picker) => {
+    const toggle = picker.querySelector(".subcategory-picker__toggle");
+    const menu = picker.querySelector(".subcategory-picker__menu");
+
+    if (!toggle || !menu) {
+        return;
+    }
+
+    const closePicker = () => {
+        picker.classList.remove("is-open");
+        toggle.setAttribute("aria-expanded", "false");
+        window.setTimeout(() => {
+            if (!picker.classList.contains("is-open")) {
+                menu.hidden = true;
+            }
+        }, 210);
+    };
+
+    const openPicker = () => {
+        menu.hidden = false;
+        window.requestAnimationFrame(() => {
+            picker.classList.add("is-open");
+            toggle.setAttribute("aria-expanded", "true");
+        });
+    };
+
+    toggle.addEventListener("click", () => {
+        if (picker.classList.contains("is-open")) {
+            closePicker();
+        } else {
+            openPicker();
+        }
+    });
+
+    document.addEventListener("click", (event) => {
+        if (!picker.contains(event.target)) {
+            closePicker();
+        }
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            closePicker();
+        }
+    });
+});
 
 if (productCards.length) {
     const mobileProductCardQuery = window.matchMedia("(max-width: 560px)");
